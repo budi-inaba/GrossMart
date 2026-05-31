@@ -418,20 +418,19 @@ function renderTabPenjualan() {
         </div>
         
        <!-- Tombol Tambah Transaksi -->
-    <button 
-          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto group" 
-          id="btnTambahTransaksi">
-        <!-- Icon dengan efek glow -->
-        <div class="relative">
-        <div class="absolute inset-0 bg-white/30 rounded-full blur-md group-hover:blur-lg transition-all"></div>
-        <div class="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
-          <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain" />
-        </div>
-      </div>
+<button 
+  class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto min-h-[56px]" 
+  id="btnTambahTransaksi">
+  <!-- Icon Container - Selalu Terlihat -->
+  <div class="flex-shrink-0 w-12 h-12 bg-white/95 rounded-xl flex items-center justify-center shadow-sm">
+    <img src="asset/trolley_plus.png" alt="Icon" class="w-8 h-8 object-contain" />
+  </div>
   
-        <!-- Teks (Hanya muncul di layar lebar) -->
-        <span class="hidden sm:inline text-sm font-bold">Tambah Transaksi</span>
-    </button>
+  <!-- Teks - Responsive -->
+  <span class="text-base sm:text-sm font-bold sm:font-semibold whitespace-nowrap">
+    Tambah Transaksi
+  </span>
+</button>
       </div>
 
       <!-- Tabel Data -->
