@@ -432,7 +432,7 @@ function renderTabPenjualan() {
   <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
               sm:w-10 sm:h-10 sm:rounded-lg">
     <!-- ✅ IKON DISESUAIKAN: w-8 h-8 agar proporsional -->
-    <img src="asset/trolley_plus.png" alt="Icon" class="w-8 h-8 object-contain sm:w-6 sm:h-6" />
+    <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain sm:w-6 sm:h-6" />
   </div>
   
   <!-- Teks (Hanya muncul di desktop) -->
