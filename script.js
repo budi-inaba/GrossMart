@@ -425,12 +425,12 @@ function renderTabPenjualan() {
           <!-- Di Mobile: Compact (Icon Only), Di Desktop: Full Text -->
           <button 
             class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-                     w-14 h-14 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
+                     w-12 h-12 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
             id="btnTambahTransaksi"
           >
             <!-- Icon Container -->
-            <div class="w-12 h-12 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-              <img src="asset/trolley_plus.png" alt="Icon" class="w-12 h-12 sm:w-7 sm:h-7 object-contain" />
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+              <img src="asset/trolley_plus.png" alt="Icon" class="w-12 h-12 sm:w-12 sm:h-12 object-contain" />
             </div>
             
             <!-- Teks (Hanya muncul di desktop) -->
@@ -440,7 +440,7 @@ function renderTabPenjualan() {
           </button>
         </div>
       </div>
-
+      
       <!-- Tabel Data -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
