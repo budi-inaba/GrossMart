@@ -422,22 +422,24 @@ function renderTabPenjualan() {
     </div>
     
     <!-- Tombol Tambah Transaksi -->
-    <button 
-      class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-               w-12 h-12 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
-      id="btnTambahTransaksi"
-    >
-      <!-- Icon Container -->
-      <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-        <!-- ✅ FIX: Ukuran icon disesuaikan agar muat di kotak putih -->
-        <img src="asset/trolley_plus.png" alt="Icon" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" />
-      </div>
-      
-      <!-- Teks (Hanya muncul di desktop) -->
-      <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
-        Tambah Transaksi
-      </span>
-    </button>
+<button 
+  class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
+         w-14 h-14 rounded-full p-0
+         sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" 
+  id="btnTambahTransaksi"
+>
+  <!-- Icon Container (Bulat di HP, Kotak di Desktop) -->
+  <div class="w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
+              sm:w-10 sm:h-10 sm:rounded-lg">
+    <!-- Ikon (Lebih besar di HP) -->
+    <img src="asset/trolley_plus.png" alt="Icon" class="w-7 h-7 object-contain sm:w-6 sm:h-6" />
+  </div>
+  
+  <!-- Teks (Hanya muncul di desktop) -->
+  <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
+    Tambah Transaksi
+  </span>
+</button>
   </div>
 </div>
       
