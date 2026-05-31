@@ -432,51 +432,47 @@ function renderTabPenjualan() {
         </div>
       </div>
 
-      <!-- Tabel Data -->
+      <!-- Tabel Data (UKURAN DIPERKECIL) -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left whitespace-nowrap">
-            <!-- ✅ THEAD: Semua Kolom Center -->
-            <thead class="text-xs text-white bg-teal-600 uppercase">
+          <!-- ✅ Table: text-xs, Border tipis -->
+          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+            <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
               <tr>
-                <th class="px-4 py-3 text-center border-r border-teal-500">No</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Tanggal</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Nama Barang</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Kode</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Jumlah</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Harga</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Total</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Hrg Beli</th>
-                <th class="px-4 py-3 text-center border-r border-teal-500">Tot Beli</th>
-                <th class="px-4 py-3 text-center">Keuntungan</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">No</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Tanggal</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Nama Barang</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Kode</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Jumlah</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Harga</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Total</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Hrg Beli</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Tot Beli</th>
+                <th class="px-2 py-1.5">Keuntungan</th>
               </tr>
             </thead>
-            
-            <!-- ✅ TBODY: Semua Kolom Center -->
             <tbody>
               ${mockPenjualan.map((item, index) => `
-                <tr class="border-b hover:bg-slate-50 transition-colors">
-                  <td class="px-4 py-3 text-center border-r border-slate-100">${index + 1}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.tanggal}</td>
-                  <td class="px-4 py-3 text-center font-medium text-slate-800 border-r border-slate-100">${item.nama}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.kode}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.jumlah}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100">${formatRp(item.harga)}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100 font-semibold">${formatRp(item.total)}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100 text-slate-500">${formatRp(item.hargaBeli)}</td>
-                  <td class="px-4 py-3 text-center border-r border-slate-100 text-slate-500">${formatRp(item.totalBeli)}</td>
-                  <td class="px-4 py-3 text-center text-teal-600 font-semibold">${formatRp(item.untung)}</td>
+                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
+                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200">${item.nama}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.kode}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.jumlah}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${formatRp(item.harga)}</td>
+                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200">${formatRp(item.total)}</td>
+                  <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.hargaBeli)}</td>
+                  <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.totalBeli)}</td>
+                  <td class="px-2 py-1.5 text-teal-600 font-semibold">${formatRp(item.untung)}</td>
                 </tr>
               `).join('')}
             </tbody>
-            
-            <!-- ✅ TFOOT: Semua Kolom Center -->
             <tfoot class="bg-teal-50 font-bold">
               <tr>
-                <td colspan="6" class="px-4 py-3 text-center border-r border-slate-200">TOTAL</td>
-                <td class="px-4 py-3 text-center border-r border-slate-200">${formatRp(633000)}</td>
-                <td colspan="2" class="px-4 py-3 text-center border-r border-slate-200">${formatRp(578500)}</td>
-                <td class="px-4 py-3 text-center text-teal-700">${formatRp(54500)}</td>
+                <td colspan="6" class="px-2 py-1.5 text-right border-r border-slate-200">TOTAL</td>
+                <td class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(633000)}</td>
+                <td colspan="2" class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(578500)}</td>
+                <td class="px-2 py-1.5 text-right text-teal-700">${formatRp(54500)}</td>
               </tr>
             </tfoot>
           </table>
