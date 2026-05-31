@@ -411,26 +411,34 @@ function renderTabPenjualan() {
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Laporan -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100 gap-4">
-        <div>
-          <h2 class="text-lg font-bold text-slate-800">Laporan Penjualan</h2>
-          <p class="text-sm text-slate-500">Bulan: Januari 2026</p>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <!-- Layout: Vertical di Mobile, Horizontal di Desktop -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          
+          <!-- Judul Laporan -->
+          <div class="flex-1">
+            <h2 class="text-lg font-bold text-slate-800">Laporan Penjualan</h2>
+            <p class="text-sm text-slate-500">Bulan: Januari 2026</p>
+          </div>
+          
+          <!-- Tombol Tambah Transaksi -->
+          <!-- Di Mobile: Compact (Icon Only), Di Desktop: Full Text -->
+          <button 
+            class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
+                     w-14 h-14 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
+            id="btnTambahTransaksi"
+          >
+            <!-- Icon Container -->
+            <div class="w-12 h-12 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+              <img src="asset/trolley_plus.png" alt="Icon" class="w-12 h-12 sm:w-7 sm:h-7 object-contain" />
+            </div>
+            
+            <!-- Teks (Hanya muncul di desktop) -->
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
+              Tambah Transaksi
+            </span>
+          </button>
         </div>
-        
-       <!-- Tombol Tambah Transaksi -->
-<button 
-  class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto min-h-[64px] sm:min-h-[56px]" 
-  id="btnTambahTransaksi">
-  <!-- Icon Container -->
-  <div class="flex-shrink-0 w-12 h-12 bg-white/95 rounded-xl flex items-center justify-center shadow-sm">
-    <img src="asset/trolley_plus.png" alt="Icon" class="w-8 h-8 object-contain" />
-  </div>
-  
-  <!-- Teks -->
-  <span class="text-sm font-bold text-center sm:text-left">
-    Tambah Transaksi
-  </span>
-</button>
       </div>
 
       <!-- Tabel Data -->
