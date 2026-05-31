@@ -25,20 +25,29 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       
       <div class="flex items-center gap-3">
-        <!-- Logo dengan Ring Animation -->
-        <div class="relative">
-          <div class="absolute inset-0 bg-teal-400 rounded-2xl animate-ping opacity-20"></div>
-          <div class="relative w-20 h-8 bg-white/95 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-teal-200">
-            <img src="asset/logo-rptra.png" alt="Logo RPTRA" class="w-16 h-16 object-contain" />
-          </div>
-        </div>
-        <div class="absolute -top-1 -left-1 flex space-x-0.5">
-          <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse delay-75"></div>
-          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-150"></div>
-        </div>
-      </div>
-  
+  <!-- Container Parent (WAJIB ada class 'relative') -->
+  <div class="relative flex-shrink-0">
+    
+    <!-- 1. Efek Ping (Background) -->
+    <div class="absolute inset-0 bg-teal-400 rounded-xl animate-ping opacity-20"></div>
+    
+    <!-- 2. Kotak Logo -->
+    <!-- Saya perbesar sedikit tingginya menjadi h-10 agar logo tidak terlalu gepeng -->
+    <div class="relative w-24 h-10 bg-white/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-teal-200 z-10">
+      <img src="asset/logo-rptra.png" alt="Logo RPTRA" class="w-full h-full object-contain px-1" />
+    </div>
+
+    <!-- 3. Titik-Titik (DIPINDAHKAN KE DALAM) -->
+    <!-- Class Kunci: -top-3 (jarak ke atas), left-1/2 (geser ke tengah), -translate-x-1/2 (rapi ke tengah) -->
+    <div class="absolute -top-3 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
+      <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm border border-white"></div>
+      <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse delay-75 shadow-sm border border-white"></div>
+      <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-150 shadow-sm border border-white"></div>
+    </div>
+    
+  </div>
+
+  <!-- Teks GrossMart -->
   <div>
     <h1 class="text-lg font-bold leading-tight text-white">GrossMart</h1>
     <p class="text-xs text-teal-200 font-medium">Sistem Informasi Pengelolaan</p>
