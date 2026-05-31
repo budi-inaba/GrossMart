@@ -411,78 +411,72 @@ function renderTabPenjualan() {
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Laporan -->
-<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-  <!-- ✅ UBAH: flex-row + justify-between + items-center -->
-  <div class="flex flex-row justify-between items-center gap-3">
-    
-    <!-- Judul Laporan -->
-    <div class="min-w-0 flex-1"> <!-- min-w-0 mencegah teks melebar & mendorong tombol -->
-      <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
-      <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
-    </div>
-    
-    <!-- Tombol Tambah Transaksi -->
-<button 
-  class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-         w-14 h-14 rounded-full p-0
-         sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" 
-  id="btnTambahTransaksi"
->
-  <!-- ✅ LINGKARAN PUTIH DIPERBESAR: w-12 h-12 (dari w-10 h-10) -->
-  <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
-              sm:w-10 sm:h-10 sm:rounded-lg">
-    <!-- ✅ IKON DISESUAIKAN: w-8 h-8 agar proporsional -->
-    <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain sm:w-6 sm:h-6" />
-  </div>
-  
-  <!-- Teks (Hanya muncul di desktop) -->
-  <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
-    Tambah Transaksi
-  </span>
-</button>
-  </div>
-</div>
-      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex flex-row justify-between items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
+            <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
+          </div>
+          <button 
+            class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
+                   w-14 h-14 rounded-full p-0
+                   sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" 
+            id="btnTambahTransaksi"
+          >
+            <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
+                        sm:w-10 sm:h-10 sm:rounded-lg">
+              <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain sm:w-6 sm:h-6" />
+            </div>
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Tambah Transaksi</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Tabel Data -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left whitespace-nowrap">
+            <!-- ✅ THEAD: Semua Kolom Center -->
             <thead class="text-xs text-white bg-teal-600 uppercase">
               <tr>
                 <th class="px-4 py-3 text-center border-r border-teal-500">No</th>
-                <th class="px-4 py-3 border-r border-teal-500">Tanggal</th>
-                <th class="px-4 py-3 border-r border-teal-500">Nama Barang</th>
-                <th class="px-4 py-3 border-r border-teal-500">Kode</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Tanggal</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Nama Barang</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Kode</th>
                 <th class="px-4 py-3 text-center border-r border-teal-500">Jumlah</th>
-                <th class="px-4 py-3 text-right border-r border-teal-500">Harga</th>
-                <th class="px-4 py-3 text-right border-r border-teal-500">Total</th>
-                <th class="px-4 py-3 text-right border-r border-teal-500">Hrg Beli</th>
-                <th class="px-4 py-3 text-right border-r border-teal-500">Tot Beli</th>
-                <th class="px-4 py-3 text-right">Keuntungan</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Harga</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Total</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Hrg Beli</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Tot Beli</th>
+                <th class="px-4 py-3 text-center">Keuntungan</th>
               </tr>
             </thead>
+            
+            <!-- ✅ TBODY: Semua Kolom Center -->
             <tbody>
               ${mockPenjualan.map((item, index) => `
                 <tr class="border-b hover:bg-slate-50 transition-colors">
                   <td class="px-4 py-3 text-center border-r border-slate-100">${index + 1}</td>
-                  <td class="px-4 py-3 border-r border-slate-100">${item.tanggal}</td>
-                  <td class="px-4 py-3 font-medium text-slate-800 border-r border-slate-100">${item.nama}</td>
-                  <td class="px-4 py-3 border-r border-slate-100">${item.kode}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.tanggal}</td>
+                  <td class="px-4 py-3 text-center font-medium text-slate-800 border-r border-slate-100">${item.nama}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.kode}</td>
                   <td class="px-4 py-3 text-center border-r border-slate-100">${item.jumlah}</td>
-                  <td class="px-4 py-3 text-right border-r border-slate-100">${formatRp(item.harga)}</td>
-                  <td class="px-4 py-3 text-right border-r border-slate-100 font-semibold">${formatRp(item.total)}</td>
-                  <td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.hargaBeli)}</td>
-                  <td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.totalBeli)}</td>
-                  <td class="px-4 py-3 text-right text-teal-600 font-semibold">${formatRp(item.untung)}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100">${formatRp(item.harga)}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100 font-semibold">${formatRp(item.total)}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100 text-slate-500">${formatRp(item.hargaBeli)}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100 text-slate-500">${formatRp(item.totalBeli)}</td>
+                  <td class="px-4 py-3 text-center text-teal-600 font-semibold">${formatRp(item.untung)}</td>
                 </tr>
               `).join('')}
             </tbody>
+            
+            <!-- ✅ TFOOT: Semua Kolom Center -->
             <tfoot class="bg-teal-50 font-bold">
               <tr>
-                <td colspan="6" class="px-4 py-3 text-right border-r border-slate-200">TOTAL</td>
-                <td class="px-4 py-3 text-right border-r border-slate-200">${formatRp(633000)}</td>
-                <td colspan="2" class="px-4 py-3 text-right border-r border-slate-200">${formatRp(578500)}</td>
-                <td class="px-4 py-3 text-right text-teal-700">${formatRp(54500)}</td>
+                <td colspan="6" class="px-4 py-3 text-center border-r border-slate-200">TOTAL</td>
+                <td class="px-4 py-3 text-center border-r border-slate-200">${formatRp(633000)}</td>
+                <td colspan="2" class="px-4 py-3 text-center border-r border-slate-200">${formatRp(578500)}</td>
+                <td class="px-4 py-3 text-center text-teal-700">${formatRp(54500)}</td>
               </tr>
             </tfoot>
           </table>
