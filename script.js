@@ -419,15 +419,15 @@ function renderTabPenjualan() {
         
        <!-- Tombol Tambah Transaksi -->
 <button 
-  class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto min-h-[56px]" 
+  class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto min-h-[64px] sm:min-h-[56px]" 
   id="btnTambahTransaksi">
-  <!-- Icon Container - Selalu Terlihat -->
+  <!-- Icon Container -->
   <div class="flex-shrink-0 w-12 h-12 bg-white/95 rounded-xl flex items-center justify-center shadow-sm">
     <img src="asset/trolley_plus.png" alt="Icon" class="w-8 h-8 object-contain" />
   </div>
   
-  <!-- Teks - Responsive -->
-  <span class="text-base sm:text-sm font-bold sm:font-semibold whitespace-nowrap">
+  <!-- Teks -->
+  <span class="text-sm font-bold text-center sm:text-left">
     Tambah Transaksi
   </span>
 </button>
