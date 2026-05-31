@@ -408,7 +408,79 @@ const tabs = [
 ];
 
 function renderTabPenjualan() {
-  return `<div class="space-y-4 pb-20 animate-tab"><div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div><h2 class="text-lg font-bold text-slate-800">Laporan Penjualan</h2><p class="text-sm text-slate-500">Bulan : Januari 2026</p></div><button class="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors" id="btnTambahTransaksi"><i data-lucide="plus" class="w-5 h-5"></i><span class="hidden sm:inline ml-2 text-sm font-medium">Tambah Transaksi</span></button></div><div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm text-left whitespace-nowrap"><thead class="text-xs text-white bg-teal-600 uppercase"><tr><th class="px-4 py-3 text-center border-r border-teal-500">No</th><th class="px-4 py-3 border-r border-teal-500">Tanggal</th><th class="px-4 py-3 border-r border-teal-500">Nama Barang</th><th class="px-4 py-3 border-r border-teal-500">Kode</th><th class="px-4 py-3 text-center border-r border-teal-500">Jumlah</th><th class="px-4 py-3 text-right border-r border-teal-500">Harga</th><th class="px-4 py-3 text-right border-r border-teal-500">Total</th><th class="px-4 py-3 text-right border-r border-teal-500">Hrg Beli</th><th class="px-4 py-3 text-right border-r border-teal-500">Tot Beli</th><th class="px-4 py-3 text-right">Keuntungan</th></tr></thead><tbody>${mockPenjualan.map((item, index) => `<tr class="border-b hover:bg-slate-50 transition-colors"><td class="px-4 py-3 text-center border-r border-slate-100">${index + 1}</td><td class="px-4 py-3 border-r border-slate-100">${item.tanggal}</td><td class="px-4 py-3 font-medium text-slate-800 border-r border-slate-100">${item.nama}</td><td class="px-4 py-3 border-r border-slate-100">${item.kode}</td><td class="px-4 py-3 text-center border-r border-slate-100">${item.jumlah}</td><td class="px-4 py-3 text-right border-r border-slate-100">${formatRp(item.harga)}</td><td class="px-4 py-3 text-right border-r border-slate-100 font-semibold">${formatRp(item.total)}</td><td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.hargaBeli)}</td><td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.totalBeli)}</td><td class="px-4 py-3 text-right text-teal-600 font-semibold">${formatRp(item.untung)}</td></tr>`).join('')}</tbody><tfoot class="bg-teal-50 font-bold"><tr><td colspan="6" class="px-4 py-3 text-right border-r border-slate-200">TOTAL</td><td class="px-4 py-3 text-right border-r border-slate-200">${formatRp(633000)}</td><td colspan="2" class="px-4 py-3 text-right border-r border-slate-200">${formatRp(578500)}</td><td class="px-4 py-3 text-right text-teal-700">${formatRp(54500)}</td></tr></tfoot></table></div></div></div>`;
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <!-- Header Laporan -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100 gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Laporan Penjualan</h2>
+          <p class="text-sm text-slate-500">Bulan: Januari 2026</p>
+        </div>
+        
+       <!-- Tombol Tambah Transaksi -->
+    <button 
+          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 w-full sm:w-auto group" 
+          id="btnTambahTransaksi">
+        <!-- Icon dengan efek glow -->
+        <div class="relative">
+        <div class="absolute inset-0 bg-white/30 rounded-full blur-md group-hover:blur-lg transition-all"></div>
+        <div class="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+          <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain" />
+        </div>
+      </div>
+  
+        <!-- Teks (Hanya muncul di layar lebar) -->
+        <span class="hidden sm:inline text-sm font-bold">Tambah Transaksi</span>
+    </button>
+      </div>
+
+      <!-- Tabel Data -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left whitespace-nowrap">
+            <thead class="text-xs text-white bg-teal-600 uppercase">
+              <tr>
+                <th class="px-4 py-3 text-center border-r border-teal-500">No</th>
+                <th class="px-4 py-3 border-r border-teal-500">Tanggal</th>
+                <th class="px-4 py-3 border-r border-teal-500">Nama Barang</th>
+                <th class="px-4 py-3 border-r border-teal-500">Kode</th>
+                <th class="px-4 py-3 text-center border-r border-teal-500">Jumlah</th>
+                <th class="px-4 py-3 text-right border-r border-teal-500">Harga</th>
+                <th class="px-4 py-3 text-right border-r border-teal-500">Total</th>
+                <th class="px-4 py-3 text-right border-r border-teal-500">Hrg Beli</th>
+                <th class="px-4 py-3 text-right border-r border-teal-500">Tot Beli</th>
+                <th class="px-4 py-3 text-right">Keuntungan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockPenjualan.map((item, index) => `
+                <tr class="border-b hover:bg-slate-50 transition-colors">
+                  <td class="px-4 py-3 text-center border-r border-slate-100">${index + 1}</td>
+                  <td class="px-4 py-3 border-r border-slate-100">${item.tanggal}</td>
+                  <td class="px-4 py-3 font-medium text-slate-800 border-r border-slate-100">${item.nama}</td>
+                  <td class="px-4 py-3 border-r border-slate-100">${item.kode}</td>
+                  <td class="px-4 py-3 text-center border-r border-slate-100">${item.jumlah}</td>
+                  <td class="px-4 py-3 text-right border-r border-slate-100">${formatRp(item.harga)}</td>
+                  <td class="px-4 py-3 text-right border-r border-slate-100 font-semibold">${formatRp(item.total)}</td>
+                  <td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.hargaBeli)}</td>
+                  <td class="px-4 py-3 text-right border-r border-slate-100 text-slate-500">${formatRp(item.totalBeli)}</td>
+                  <td class="px-4 py-3 text-right text-teal-600 font-semibold">${formatRp(item.untung)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot class="bg-teal-50 font-bold">
+              <tr>
+                <td colspan="6" class="px-4 py-3 text-right border-r border-slate-200">TOTAL</td>
+                <td class="px-4 py-3 text-right border-r border-slate-200">${formatRp(633000)}</td>
+                <td colspan="2" class="px-4 py-3 text-right border-r border-slate-200">${formatRp(578500)}</td>
+                <td class="px-4 py-3 text-right text-teal-700">${formatRp(54500)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderTabKasHarian() {
