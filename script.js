@@ -411,35 +411,35 @@ function renderTabPenjualan() {
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Laporan -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <!-- Layout: Vertical di Mobile, Horizontal di Desktop -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          
-          <!-- Judul Laporan -->
-          <div class="flex-1">
-            <h2 class="text-lg font-bold text-slate-800">Laporan Penjualan</h2>
-            <p class="text-sm text-slate-500">Bulan: Januari 2026</p>
-          </div>
-          
-          <!-- Tombol Tambah Transaksi -->
-          <!-- Di Mobile: Compact (Icon Only), Di Desktop: Full Text -->
-          <button 
-            class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-                     w-6 h-6 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
-            id="btnTambahTransaksi"
-          >
-            <!-- Icon Container -->
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-              <img src="asset/trolley_plus.png" alt="Icon" class="w-12 h-12 sm:w-12 sm:h-12 object-contain" />
-            </div>
-            
-            <!-- Teks (Hanya muncul di desktop) -->
-            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
-              Tambah Transaksi
-            </span>
-          </button>
-        </div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+  <!-- ✅ UBAH: flex-row + justify-between + items-center -->
+  <div class="flex flex-row justify-between items-center gap-3">
+    
+    <!-- Judul Laporan -->
+    <div class="min-w-0 flex-1"> <!-- min-w-0 mencegah teks melebar & mendorong tombol -->
+      <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
+      <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
+    </div>
+    
+    <!-- Tombol Tambah Transaksi -->
+    <button 
+      class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
+               w-12 h-12 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
+      id="btnTambahTransaksi"
+    >
+      <!-- Icon Container -->
+      <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/95 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+        <!-- ✅ FIX: Ukuran icon disesuaikan agar muat di kotak putih -->
+        <img src="asset/trolley_plus.png" alt="Icon" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" />
       </div>
+      
+      <!-- Teks (Hanya muncul di desktop) -->
+      <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">
+        Tambah Transaksi
+      </span>
+    </button>
+  </div>
+</div>
       
       <!-- Tabel Data -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
