@@ -446,8 +446,8 @@ function renderTabPenjualan() {
                 <th class="px-2 py-1.5 border-r border-teal-500">Jumlah</th>
                 <th class="px-2 py-1.5 border-r border-teal-500">Harga</th>
                 <th class="px-2 py-1.5 border-r border-teal-500">Total</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Hrg Beli</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Tot Beli</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Harga Beli</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Total Beli</th>
                 <th class="px-2 py-1.5">Keuntungan</th>
               </tr>
             </thead>
