@@ -425,7 +425,7 @@ function renderTabPenjualan() {
           <!-- Di Mobile: Compact (Icon Only), Di Desktop: Full Text -->
           <button 
             class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-                     w-12 h-12 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
+                     w-10 h-10 sm:w-auto sm:h-auto sm:px-5 sm:py-3 sm:gap-3" 
             id="btnTambahTransaksi"
           >
             <!-- Icon Container -->
