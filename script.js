@@ -424,14 +424,15 @@ function renderTabPenjualan() {
     <!-- Tombol Tambah Transaksi -->
 <button 
   class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-         w-12 h-12 rounded-full p-0
+         w-14 h-14 rounded-full p-0
          sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" 
-  id="btnTambahTransaksi">
-  <!-- Icon Container (Bulat di HP, Kotak di Desktop) -->
-  <div class="w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
+  id="btnTambahTransaksi"
+>
+  <!-- ✅ LINGKARAN PUTIH DIPERBESAR: w-12 h-12 (dari w-10 h-10) -->
+  <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
               sm:w-10 sm:h-10 sm:rounded-lg">
-    <!-- Ikon (Lebih besar di HP) -->
-    <img src="asset/trolley_plus.png" alt="Icon" class="w-10 h-10 object-contain sm:w-6 sm:h-6" />
+    <!-- ✅ IKON DISESUAIKAN: w-8 h-8 agar proporsional -->
+    <img src="asset/trolley_plus.png" alt="Icon" class="w-8 h-8 object-contain sm:w-6 sm:h-6" />
   </div>
   
   <!-- Teks (Hanya muncul di desktop) -->
