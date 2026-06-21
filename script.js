@@ -319,6 +319,7 @@ function handleLoginSubmit(e) {
       setTimeout(() => {
         closeLoginModal();
         renderUserMenu();
+        renderBottomNav(); // ✅ Refresh bottom nav untuk tampilkan/sembunyikan tab Master Data
         showCartFeedback(`👋 Halo, ${user.nama}!`);
       }, 1200);
     } else {
@@ -361,6 +362,8 @@ function handleLogout() {
 
   closeUserDropdown();
   renderUserMenu();
+  renderBottomNav(); // ✅ Refresh bottom nav
+  switchTab('penjualan'); // ✅ Reset ke tab penjualan
   showCartFeedback('👋 Anda telah keluar');
 }
 
@@ -429,16 +432,420 @@ function closeUserDropdown() {
 }
 
 // ========================================
-// POS STATE & DATA (DIPERBARUI)
+// MASTER DATA BARANG (Admin Only)
 // ========================================
-const mockProducts = [
-  { id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream' },
-  { id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream' },
-  { id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream' },
-  { id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream' },
-  { id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream' },
-  { id: 6, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream' },
+let masterDataState = {
+  search: '',
+  filterKategori: 'all',
+  editingId: null,
+};
+
+function checkAdminAccess() {
+  return authState.isLoggedIn && authState.user && authState.user.role === 'Admin';
+}
+
+function renderAccessDenied() {
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <div class="access-denied">
+        <div class="access-denied-icon">
+          <i data-lucide="shield-x"></i>
+        </div>
+        <h2>Akses Ditolak</h2>
+        <p>Maaf, fitur Master Data Barang hanya dapat diakses oleh <strong>Administrator</strong>. Silakan login sebagai admin untuk mengakses fitur ini.</p>
+        <button class="access-denied-btn" onclick="openLoginModal()">
+          <i data-lucide="log-in" class="w-4 h-4 inline-block mr-1"></i> Login sebagai Admin
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderTabMasterData() {
+  // 🔒 Proteksi akses
+  if (!checkAdminAccess()) {
+    return renderAccessDenied();
+  }
+
+  const filtered = mockProducts.filter(p => {
+    const matchSearch = masterDataState.search === '' ||
+      p.nama.toLowerCase().includes(masterDataState.search.toLowerCase()) ||
+      p.kode.toLowerCase().includes(masterDataState.search.toLowerCase());
+    const matchKategori = masterDataState.filterKategori === 'all' || p.kategori === masterDataState.filterKategori;
+    return matchSearch && matchKategori;
+  });
+
+  // Statistik
+  const totalBarang = mockProducts.length;
+  const totalStok = mockProducts.reduce((sum, p) => sum + (p.stok || 0), 0);
+  const stokRendah = mockProducts.filter(p => (p.stok || 0) < 10).length;
+  const nilaiInventaris = mockProducts.reduce((sum, p) => sum + ((p.stok || 0) * p.hargaBeli), 0);
+
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <!-- Header -->
+      <div class="master-data-header">
+        <div class="master-data-title">
+          <div class="icon-box">
+            <i data-lucide="package" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2>Master Data Barang</h2>
+            <p class="text-xs text-slate-500">Kelola data produk dan stok barang</p>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="master-stats">
+          <div class="stat-card info">
+            <div class="stat-value">${totalBarang}</div>
+            <div class="stat-label">Total Produk</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalStok}</div>
+            <div class="stat-label">Total Stok</div>
+          </div>
+          <div class="stat-card ${stokRendah > 0 ? 'danger' : 'warning'}">
+            <div class="stat-value">${stokRendah}</div>
+            <div class="stat-label">Stok Rendah</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${formatRp(nilaiInventaris)}</div>
+            <div class="stat-label">Nilai Inventaris</div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="master-toolbar">
+          <div class="master-search">
+            <i data-lucide="search"></i>
+            <input type="text" id="masterSearch" placeholder="Cari nama atau kode barang..." value="${masterDataState.search}" />
+          </div>
+          <select class="master-filter" id="masterFilter">
+            <option value="all">Semua Kategori</option>
+            ${kategoriList.map(k => `<option value="${k}" ${masterDataState.filterKategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+          </select>
+          <button class="master-btn master-btn-primary" id="masterAddBtn">
+            <i data-lucide="plus"></i>
+            <span>Tambah Barang</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="master-table-wrapper">
+        ${filtered.length === 0 ? `
+          <div class="master-empty">
+            <i data-lucide="package-x"></i>
+            <h3>Tidak ada data</h3>
+            <p>Barang tidak ditemukan dengan filter saat ini</p>
+          </div>
+        ` : `
+          <div style="overflow-x: auto;">
+            <table class="master-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">No</th>
+                  <th style="width: 60px;">Foto</th>
+                  <th>Kode</th>
+                  <th>Nama Barang</th>
+                  <th>Kategori</th>
+                  <th style="text-align: right;">Harga Beli</th>
+                  <th style="text-align: right;">Harga Jual</th>
+                  <th style="text-align: center;">Stok</th>
+                  <th style="text-align: center; width: 100px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered.map((p, i) => `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>
+                      ${p.image 
+                        ? `<img src="${p.image}" class="product-thumb" alt="${p.nama}" onerror="this.style.display='none'">`
+                        : `<div class="product-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>`
+                      }
+                    </td>
+                    <td><span class="product-code">${p.kode}</span></td>
+                    <td style="font-weight: 600;">${p.nama}</td>
+                    <td><span class="category-badge">${p.kategori}</span></td>
+                    <td style="text-align: right; color: #64748b;">${formatRp(p.hargaBeli)}</td>
+                    <td style="text-align: right; font-weight: 700; color: #0d9488;">${formatRp(p.harga)}</td>
+                    <td style="text-align: center;">
+                      ${(p.stok || 0) < 10 
+                        ? `<span class="stock-low">${p.stok || 0}</span>` 
+                        : `<span class="stock-ok">${p.stok || 0}</span>`
+                      }
+                    </td>
+                    <td>
+                      <div class="action-btns">
+                        <button class="action-icon-btn edit" data-edit-id="${p.id}" title="Edit">
+                          <i data-lucide="pencil"></i>
+                        </button>
+                        <button class="action-icon-btn delete" data-delete-id="${p.id}" title="Hapus">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function setupMasterDataListeners() {
+  // 🔒 Proteksi: hanya admin
+  if (!checkAdminAccess()) return;
+
+  const searchInput = document.getElementById('masterSearch');
+  const filterSelect = document.getElementById('masterFilter');
+  const addBtn = document.getElementById('masterAddBtn');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      masterDataState.search = e.target.value;
+      refreshMasterData();
+    });
+  }
+  if (filterSelect) {
+    filterSelect.addEventListener('change', (e) => {
+      masterDataState.filterKategori = e.target.value;
+      refreshMasterData();
+    });
+  }
+  if (addBtn) {
+    addBtn.addEventListener('click', () => openMasterDataModal());
+  }
+
+  // Edit buttons
+  document.querySelectorAll('[data-edit-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(btn.dataset.editId);
+      openMasterDataModal(id);
+    });
+  });
+
+  // Delete buttons
+  document.querySelectorAll('[data-delete-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(btn.dataset.deleteId);
+      deleteMasterData(id);
+    });
+  });
+}
+
+function refreshMasterData() {
+  const mainContent = document.getElementById('mainContent');
+  if (mainContent && activeTab === 'master') {
+    mainContent.innerHTML = renderTabMasterData();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setupMasterDataListeners();
+    // Restore focus ke search jika ada
+    const searchInput = document.getElementById('masterSearch');
+    if (searchInput && masterDataState.search) {
+      searchInput.focus();
+      searchInput.setSelectionRange(masterDataState.search.length, masterDataState.search.length);
+    }
+  }
+}
+
+function openMasterDataModal(editId = null) {
+  // 🔒 Proteksi ganda
+  if (!checkAdminAccess()) {
+    alert('⛔ Akses Ditolak! Hanya admin yang dapat mengelola data barang.');
+    return;
+  }
+
+  masterDataState.editingId = editId;
+  const product = editId ? mockProducts.find(p => p.id === editId) : null;
+  const isEdit = !!product;
+
+  const modalHtml = `
+    <div class="md-modal-overlay active" id="mdModalOverlay">
+      <div class="md-modal">
+        <div class="md-modal-header">
+          <h3>
+            <i data-lucide="${isEdit ? 'pencil' : 'plus-circle'}"></i>
+            ${isEdit ? 'Edit Barang' : 'Tambah Barang Baru'}
+          </h3>
+          <button class="md-modal-close" id="mdModalClose">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="md-modal-body">
+          <form id="mdForm">
+            <div class="md-form-grid">
+              <div class="md-form-group">
+                <label>Kode Barang <span class="required">*</span></label>
+                <input type="text" id="mdKode" value="${product?.kode || ''}" placeholder="Contoh: FB-001" required />
+              </div>
+              <div class="md-form-group">
+                <label>Kategori <span class="required">*</span></label>
+                <select id="mdKategori" required>
+                  <option value="">-- Pilih Kategori --</option>
+                  ${kategoriList.map(k => `<option value="${k}" ${product?.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+                </select>
+              </div>
+              <div class="md-form-group full">
+                <label>Nama Barang <span class="required">*</span></label>
+                <input type="text" id="mdNama" value="${product?.nama || ''}" placeholder="Nama lengkap barang" required />
+              </div>
+              <div class="md-form-group">
+                <label>Harga Beli <span class="required">*</span></label>
+                <input type="number" id="mdHargaBeli" value="${product?.hargaBeli || ''}" placeholder="0" min="0" required />
+              </div>
+              <div class="md-form-group">
+                <label>Harga Jual <span class="required">*</span></label>
+                <input type="number" id="mdHargaJual" value="${product?.harga || ''}" placeholder="0" min="0" required />
+              </div>
+              <div class="md-form-group">
+                <label>Stok <span class="required">*</span></label>
+                <input type="number" id="mdStok" value="${product?.stok ?? ''}" placeholder="0" min="0" required />
+              </div>
+              <div class="md-form-group">
+                <label>URL Gambar</label>
+                <input type="text" id="mdImage" value="${product?.image || ''}" placeholder="asset/nama-file.png" />
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="md-modal-footer">
+          <button class="md-btn md-btn-cancel" id="mdCancelBtn">Batal</button>
+          <button class="md-btn md-btn-save" id="mdSaveBtn">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            ${isEdit ? 'Update' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = modalHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Event listeners
+  document.getElementById('mdModalClose').addEventListener('click', closeMasterDataModal);
+  document.getElementById('mdCancelBtn').addEventListener('click', closeMasterDataModal);
+  document.getElementById('mdModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'mdModalOverlay') closeMasterDataModal();
+  });
+  document.getElementById('mdSaveBtn').addEventListener('click', saveMasterData);
+
+  // ESC to close
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeMasterDataModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+
+  // Focus ke field pertama
+  setTimeout(() => document.getElementById('mdKode')?.focus(), 200);
+}
+
+function closeMasterDataModal() {
+  const overlay = document.getElementById('mdModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.remove(), 300);
+  }
+  masterDataState.editingId = null;
+}
+
+function saveMasterData() {
+  const kode = document.getElementById('mdKode').value.trim();
+  const nama = document.getElementById('mdNama').value.trim();
+  const kategori = document.getElementById('mdKategori').value;
+  const hargaBeli = parseInt(document.getElementById('mdHargaBeli').value) || 0;
+  const hargaJual = parseInt(document.getElementById('mdHargaJual').value) || 0;
+  const stok = parseInt(document.getElementById('mdStok').value) || 0;
+  const image = document.getElementById('mdImage').value.trim();
+
+  // Validasi
+  if (!kode || !nama || !kategori) {
+    alert('⚠️ Kode, Nama, dan Kategori wajib diisi!');
+    return;
+  }
+  if (hargaBeli <= 0 || hargaJual <= 0) {
+    alert('⚠️ Harga beli dan harga jual harus lebih dari 0!');
+    return;
+  }
+  if (hargaJual < hargaBeli) {
+    if (!confirm('⚠️ Harga jual lebih kecil dari harga beli. Lanjutkan?')) return;
+  }
+
+  // Cek duplikasi kode (kecuali saat edit barang yang sama)
+  const duplikat = mockProducts.find(p => p.kode.toLowerCase() === kode.toLowerCase() && p.id !== masterDataState.editingId);
+  if (duplikat) {
+    alert(`⚠️ Kode barang "${kode}" sudah digunakan oleh produk lain!`);
+    return;
+  }
+
+  if (masterDataState.editingId) {
+    // UPDATE
+    const idx = mockProducts.findIndex(p => p.id === masterDataState.editingId);
+    if (idx !== -1) {
+      mockProducts[idx] = {
+        ...mockProducts[idx],
+        kode, nama, kategori,
+        hargaBeli, harga: hargaJual,
+        stok, image
+      };
+      showCartFeedback(`✅ Barang "${nama}" berhasil diupdate`);
+    }
+  } else {
+    // CREATE
+    const newId = mockProducts.length > 0 ? Math.max(...mockProducts.map(p => p.id)) + 1 : 1;
+    mockProducts.push({
+      id: newId, kode, nama, kategori,
+      hargaBeli, harga: hargaJual,
+      stok, image
+    });
+    showCartFeedback(`✅ Barang "${nama}" berhasil ditambahkan`);
+  }
+
+  closeMasterDataModal();
+  refreshMasterData();
+}
+
+function deleteMasterData(id) {
+  const product = mockProducts.find(p => p.id === id);
+  if (!product) return;
+
+  if (!confirm(`🗑️ Hapus barang "${product.nama}"?\n\nData yang dihapus tidak dapat dikembalikan.`)) return;
+  
+  // Konfirmasi kedua untuk keamanan
+  if (!confirm(`⚠️ Yakin ingin menghapus?\nKode: ${product.kode}\nNama: ${product.nama}`)) return;
+
+  mockProducts = mockProducts.filter(p => p.id !== id);
+  showCartFeedback(`🗑️ Barang "${product.nama}" telah dihapus`);
+  refreshMasterData();
+}
+
+// ========================================
+// MASTER DATA BARANG (Bisa diedit)
+// ========================================
+let mockProducts = [
+  { id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream', stok: 50 },
+  { id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream', stok: 35 },
+  { id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream', stok: 28 },
+  { id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream', stok: 42 },
+  { id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream', stok: 15 },
+  { id: 6, nama: 'Aqua Gelas', kode: 'AG', harga: 500, hargaBeli: 300, image: '', kategori: 'Minuman', stok: 120 },
+  { id: 7, nama: 'Aqua Botol 600ml', kode: 'AB', harga: 3000, hargaBeli: 2500, image: '', kategori: 'Minuman', stok: 80 },
+  { id: 8, nama: 'Nasi Uduk', kode: 'NU', harga: 7000, hargaBeli: 6000, image: '', kategori: 'Makanan', stok: 5 },
 ];
+
+const kategoriList = ['Ice Cream', 'Minuman', 'Makanan', 'Snack', 'Lainnya'];
 
 let posState = {
   isOpen: false, 
@@ -787,12 +1194,21 @@ const formatRp = (angka) => {
 };
 
 let activeTab = 'penjualan';
-const tabs = [
-  { id: 'penjualan', label: 'Penjualan', icon: 'shopping-cart' },
-  { id: 'kas', label: 'Kas Harian', icon: 'wallet' },
-  { id: 'stok', label: 'Kartu Stok', icon: 'package' },
-  { id: 'rekap', label: 'Rekap', icon: 'bar-chart-3' },
-];
+function getTabs() {
+  const baseTabs = [
+    { id: 'penjualan', label: 'Penjualan', icon: 'shopping-cart' },
+    { id: 'kas', label: 'Kas Harian', icon: 'wallet' },
+    { id: 'stok', label: 'Kartu Stok', icon: 'package' },
+    { id: 'rekap', label: 'Rekap', icon: 'bar-chart-3' },
+  ];
+  
+  // ✅ Tambahkan tab Master Data HANYA untuk Admin
+  if (checkAdminAccess()) {
+    baseTabs.push({ id: 'master', label: 'Master Data', icon: 'database' });
+  }
+  
+  return baseTabs;
+}
 
 function renderTabPenjualan() {
   return `
@@ -882,17 +1298,32 @@ function renderTabRekap() {
 }
 
 function renderContent(tabId) {
-  const contentMap = { 'penjualan': renderTabPenjualan, 'kas': renderTabKasHarian, 'stok': renderTabStok, 'rekap': renderTabRekap };
+  const contentMap = { 
+    'penjualan': renderTabPenjualan, 
+    'kas': renderTabKasHarian, 
+    'stok': renderTabStok, 
+    'rekap': renderTabRekap,
+    'master': renderTabMasterData, // ✅ TAB BARU
+  };
   return contentMap[tabId]?.() || renderTabPenjualan();
 }
 
 function renderBottomNav() {
   const navContainer = document.getElementById('bottomNav');
   if (!navContainer) return;
-  navContainer.innerHTML = tabs.map(tab => {
+  
+  const currentTabs = getTabs();
+  
+  // Jika tab aktif tidak ada di list (misal user logout dari admin), reset ke penjualan
+  if (!currentTabs.find(t => t.id === activeTab)) {
+    activeTab = 'penjualan';
+  }
+  
+  navContainer.innerHTML = currentTabs.map(tab => {
     const isActive = activeTab === tab.id;
     return `<button data-tab="${tab.id}" class="nav-btn flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-200 ${isActive ? 'text-teal-700 bg-teal-50 shadow-sm' : 'text-slate-400 hover:text-teal-600 hover:bg-slate-50'}"><i data-lucide="${tab.icon}" class="w-6 h-6 mb-1 transition-transform duration-200 ${isActive ? 'scale-110' : ''}"></i><span class="text-[10px] sm:text-xs ${isActive ? 'font-bold' : 'font-medium'}">${tab.label}</span></button>`;
   }).join('');
+  
   if (typeof lucide !== 'undefined') lucide.createIcons();
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab));
@@ -909,6 +1340,11 @@ function switchTab(tabId) {
     if (animatedContent) {
       animatedContent.style.animation = 'none';
       setTimeout(() => animatedContent.style.animation = 'fadeInZoom 0.2s ease-out forwards', 10);
+    }
+    
+    // ✅ Setup listeners khusus Master Data
+    if (tabId === 'master') {
+      setupMasterDataListeners();
     }
   }
   renderBottomNav();
