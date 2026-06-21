@@ -16,6 +16,7 @@ const mockPenjualan = [
   { id: 7, tanggal: '31 JANUARI 2025', nama: 'AQUA GELAS', kode: 'AG', jumlah: 10, harga: 500, total: 5000, hargaBeli: 300, totalBeli: 3000, untung: 2000 },
   { id: 8, tanggal: '31 JANUARI 2025', nama: 'AQUA BOTOL BESAR', kode: 'ABB', jumlah: 4, harga: 5000, total: 20000, hargaBeli: 4500, totalBeli: 18000, untung: 2000 },
 ];
+
 const mockKasHarian = [
   { id: 1, tanggal: '2 JANUARI 2025', bukti: '', uraian: 'SALDO BULAN DESEMBER', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2200000 },
   { id: 2, tanggal: '3 JANUARI 2025', bukti: '', uraian: 'PENJUALAN KENTANG MUSTOFA', inJml: 4, inHrg: 100000, inTot: 400000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2600000 },
@@ -25,6 +26,7 @@ const mockKasHarian = [
   { id: 6, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'PEMBELIAN AQUA GELAS 48', inJml: '', inHrg: '', inTot: '', outJml: 48, outHrg: 300, outTot: 14400, biaya: '', saldo: 2709600 },
   { id: 7, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'BIAYA OPERASIONAL (PEMBERIAN MINUMAN)', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: 50000, saldo: 2627600 },
 ];
+
 const mockKartuStok = {
   nama: 'AQUA GELAS', kode: 'AG', supplier: 'PT TIRTA', kontak: '08123456789',
   riwayat: [
@@ -35,11 +37,396 @@ const mockKartuStok = {
     { id: 5, tanggal: '30 JANUARI 2025', masuk: '', keluar: 17, sisa: 1, paraf: '✓' },
   ]
 };
+
 const mockRekap = [
   { id: 1, blnIn: 'JAN', uraianIn: 'PENJUALAN', jmlIn: 633000, blnOut: 'JAN', uraianOut: 'PEMBELANJAAN', jmlOut: 524000 },
   { id: 2, blnIn: '', uraianIn: '', jmlIn: '', blnOut: '', uraianOut: 'BIAYA', jmlOut: 96400 },
   { id: 3, blnIn: 'FEB', uraianIn: 'PENJUALAN', jmlIn: 0, blnOut: 'FEB', uraianOut: 'PEMBELANJAAN', jmlOut: 0 },
 ];
+
+// ========================================
+// AUTH STATE
+// ========================================
+let authState = {
+  isLoggedIn: false,
+  user: null,
+  rememberMe: false,
+};
+
+// Mock users database (bisa diganti dengan API call)
+const mockUsers = [
+  { username: 'admin', password: 'admin123', nama: 'Administrator', role: 'Admin' },
+  { username: 'kasir', password: 'kasir123', nama: 'Kasir Toko', role: 'Kasir' },
+  { username: 'demo',  password: 'demo',    nama: 'User Demo',    role: 'Viewer' },
+];
+
+// Load session dari localStorage saat aplikasi dimulai
+function loadAuthSession() {
+  try {
+    const saved = localStorage.getItem('grossmart_session');
+    if (saved) {
+      const session = JSON.parse(saved);
+      if (session && session.username) {
+        const user = mockUsers.find(u => u.username === session.username);
+        if (user) {
+          authState.isLoggedIn = true;
+          authState.user = user;
+          authState.rememberMe = true;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Gagal memuat sesi:', e);
+  }
+}
+
+function saveAuthSession() {
+  if (authState.isLoggedIn && authState.rememberMe) {
+    localStorage.setItem('grossmart_session', JSON.stringify({
+      username: authState.user.username,
+      loginAt: new Date().toISOString(),
+    }));
+  }
+}
+
+function clearAuthSession() {
+  localStorage.removeItem('grossmart_session');
+}
+
+// ========================================
+// LOGIN MODAL
+// ========================================
+function renderLoginModal() {
+  return `
+    <div class="login-overlay" id="loginOverlay">
+      <div class="login-card" role="dialog" aria-modal="true">
+        <!-- Header -->
+        <div class="login-header">
+          <button class="login-close-btn" id="loginCloseBtn" aria-label="Tutup">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          <div class="login-logo-wrapper">
+            <img src="asset/logo-rptra.png" alt="Logo" />
+          </div>
+          <h2 class="login-title">Selamat Datang</h2>
+          <p class="login-subtitle">Masuk ke akun GrossMart Anda</p>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+          <div class="login-error" id="loginError">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+            <span id="loginErrorMsg">Username atau password salah</span>
+          </div>
+
+          <form id="loginForm" autocomplete="on" novalidate>
+            <!-- Username -->
+            <div class="login-input-group">
+              <label class="login-input-label" for="loginUsername">Username</label>
+              <div class="login-input-wrapper">
+                <i data-lucide="user" class="login-input-icon"></i>
+                <input
+                  type="text"
+                  id="loginUsername"
+                  class="login-input"
+                  placeholder="Masukkan username"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="login-input-group">
+              <label class="login-input-label" for="loginPassword">Password</label>
+              <div class="login-input-wrapper">
+                <i data-lucide="lock" class="login-input-icon"></i>
+                <input
+                  type="password"
+                  id="loginPassword"
+                  class="login-input"
+                  placeholder="Masukkan password"
+                  autocomplete="current-password"
+                  required
+                />
+                <button type="button" class="login-toggle-pwd" id="togglePwdBtn" aria-label="Tampilkan password">
+                  <i data-lucide="eye" id="togglePwdIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Options -->
+            <div class="login-options">
+              <label class="login-remember">
+                <input type="checkbox" id="loginRemember" />
+                <span>Ingat saya</span>
+              </label>
+              <a href="#" class="login-forgot" onclick="alert('Hubungi administrator untuk reset password.'); return false;">Lupa password?</a>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="login-submit-btn" id="loginSubmitBtn">
+              <span id="loginBtnText">Masuk</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="login-footer">
+          <strong>Demo:</strong> admin / admin123 &nbsp;•&nbsp; kasir / kasir123
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openLoginModal() {
+  // Jika sudah login, tampilkan dropdown user, bukan modal login
+  if (authState.isLoggedIn) {
+    toggleUserDropdown();
+    return;
+  }
+
+  let overlay = document.getElementById('loginOverlay');
+  if (!overlay) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = renderLoginModal();
+    document.body.appendChild(wrapper.firstElementChild);
+    overlay = document.getElementById('loginOverlay');
+  }
+
+  overlay.classList.add('active');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  document.body.style.overflow = 'hidden';
+
+  // Reset form state
+  const form = document.getElementById('loginForm');
+  if (form) form.reset();
+  hideLoginError();
+
+  // Focus ke username
+  setTimeout(() => {
+    document.getElementById('loginUsername')?.focus();
+  }, 300);
+
+  setupLoginEventListeners();
+}
+
+function closeLoginModal() {
+  const overlay = document.getElementById('loginOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      overlay.remove();
+    }, 300);
+  }
+  document.body.style.overflow = '';
+}
+
+function setupLoginEventListeners() {
+  const form = document.getElementById('loginForm');
+  const closeBtn = document.getElementById('loginCloseBtn');
+  const overlay = document.getElementById('loginOverlay');
+  const toggleBtn = document.getElementById('togglePwdBtn');
+
+  if (form) form.addEventListener('submit', handleLoginSubmit);
+  if (closeBtn) closeBtn.addEventListener('click', closeLoginModal);
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeLoginModal();
+    });
+  }
+  if (toggleBtn) toggleBtn.addEventListener('click', togglePasswordVisibility);
+
+  // ESC untuk menutup
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeLoginModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+}
+
+function togglePasswordVisibility() {
+  const pwdInput = document.getElementById('loginPassword');
+  const icon = document.getElementById('togglePwdIcon');
+  if (!pwdInput || !icon) return;
+
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    pwdInput.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function showLoginError(message) {
+  const errorBox = document.getElementById('loginError');
+  const errorMsg = document.getElementById('loginErrorMsg');
+  if (errorBox && errorMsg) {
+    errorMsg.textContent = message;
+    errorBox.classList.add('show');
+  }
+}
+
+function hideLoginError() {
+  const errorBox = document.getElementById('loginError');
+  if (errorBox) errorBox.classList.remove('show');
+}
+
+function handleLoginSubmit(e) {
+  e.preventDefault();
+  hideLoginError();
+
+  const usernameInput = document.getElementById('loginUsername');
+  const passwordInput = document.getElementById('loginPassword');
+  const rememberInput = document.getElementById('loginRemember');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  const btnText = document.getElementById('loginBtnText');
+
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  // Validasi client-side
+  if (!username || !password) {
+    showLoginError('Username dan password wajib diisi');
+    return;
+  }
+
+  // Loading state
+  submitBtn.disabled = true;
+  btnText.innerHTML = '<span class="spinner"></span> Memverifikasi...';
+
+  // Simulasi delay API (800ms)
+  setTimeout(() => {
+    const user = mockUsers.find(u => u.username === username && u.password === password);
+
+    if (user) {
+      // Login berhasil
+      authState.isLoggedIn = true;
+      authState.user = { username: user.username, nama: user.nama, role: user.role };
+      authState.rememberMe = rememberInput.checked;
+
+      if (authState.rememberMe) {
+        saveAuthSession();
+      }
+
+      showLoginSuccess();
+
+      setTimeout(() => {
+        closeLoginModal();
+        renderUserMenu();
+        showCartFeedback(`👋 Halo, ${user.nama}!`);
+      }, 1200);
+    } else {
+      // Login gagal
+      showLoginError('Username atau password salah. Silakan coba lagi.');
+      submitBtn.disabled = false;
+      btnText.textContent = 'Masuk';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  }, 800);
+}
+
+function showLoginSuccess() {
+  const body = document.querySelector('.login-body');
+  if (!body) return;
+
+  body.innerHTML = `
+    <div class="login-success">
+      <div class="login-success-icon">
+        <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+      </div>
+      <h3>Login Berhasil!</h3>
+      <p>Mengalihkan ke dashboard...</p>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ========================================
+// USER MENU (Avatar di Header)
+// ========================================
+function handleLogout() {
+  if (!confirm('Yakin ingin keluar dari akun?')) return;
+
+  authState.isLoggedIn = false;
+  authState.user = null;
+  authState.rememberMe = false;
+  clearAuthSession();
+
+  closeUserDropdown();
+  renderUserMenu();
+  showCartFeedback('👋 Anda telah keluar');
+}
+
+function renderUserMenu() {
+  const userMenuContainer = document.getElementById('userMenuContainer');
+  if (!userMenuContainer) return;
+
+  if (authState.isLoggedIn && authState.user) {
+    const initial = authState.user.nama.charAt(0).toUpperCase();
+    userMenuContainer.innerHTML = `
+      <div class="user-menu-wrapper">
+        <button class="user-avatar-btn" id="userAvatarBtn" aria-label="Menu Pengguna">
+          <div class="user-avatar-circle">${initial}</div>
+          <span class="user-avatar-name hidden sm:inline">${authState.user.nama}</span>
+          <i data-lucide="chevron-down"></i>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-name">${authState.user.nama}</div>
+            <div class="user-dropdown-role">${authState.user.role}</div>
+          </div>
+          <button class="user-dropdown-item" onclick="alert('Fitur profil segera hadir!')">
+            <i data-lucide="user"></i> Profil Saya
+          </button>
+          <button class="user-dropdown-item" onclick="alert('Fitur pengaturan segera hadir!')">
+            <i data-lucide="settings"></i> Pengaturan
+          </button>
+          <button class="user-dropdown-item danger" id="logoutBtn">
+            <i data-lucide="log-out"></i> Keluar
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    userMenuContainer.innerHTML = `
+    <button class="p-1 bg-teal-600 hover:bg-teal-500 rounded-full transition-colors" id="loginBtn" title="Login">
+        <i data-lucide="user-circle" class="w-[28px] h-[28px]"></i>
+    </button>
+    `;
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Attach events
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) loginBtn.addEventListener('click', openLoginModal);
+
+  const avatarBtn = document.getElementById('userAvatarBtn');
+  if (avatarBtn) avatarBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleUserDropdown();
+  });
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+}
+
+function toggleUserDropdown() {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) dropdown.classList.toggle('active');
+}
+
+function closeUserDropdown() {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) dropdown.classList.remove('active');
+}
 
 // ========================================
 // POS STATE & DATA (DIPERBARUI)
@@ -261,13 +648,13 @@ function setupPOSEventListeners() {
     }
   });
   document.getElementById('posDate')?.addEventListener('change', (e) => {
-  posState.transactionDate = e.target.value;
-  // Jika user manual ubah tanggal, hentikan auto-update sementara
-  if (posState.dateUpdateInterval) {
-    clearInterval(posState.dateUpdateInterval);
-    posState.dateUpdateInterval = null;
-  }
-});
+    posState.transactionDate = e.target.value;
+    // Jika user manual ubah tanggal, hentikan auto-update sementara
+    if (posState.dateUpdateInterval) {
+      clearInterval(posState.dateUpdateInterval);
+      posState.dateUpdateInterval = null;
+    }
+  });
   document.getElementById('posSearch')?.addEventListener('input', (e) => {
     const catalog = document.getElementById('productCatalog');
     if (catalog) { catalog.innerHTML = renderProductCatalog(e.target.value); setupProductCardListeners(); }
@@ -538,16 +925,31 @@ function renderDecoratorLine() {
   container.innerHTML = html;
 }
 
+// ========================================
+// INIT APP
+// ========================================
 function initApp() {
   renderDecoratorLine();
   renderBottomNav();
   switchTab('penjualan');
   if (typeof lucide !== 'undefined') lucide.createIcons();
+
   const notifBtn = document.getElementById('notifBtn');
   if (notifBtn) notifBtn.addEventListener('click', () => alert('🔔 Tidak ada notifikasi baru'));
-  
+
   document.addEventListener('click', (e) => {
     if (e.target.closest('#btnTambahTransaksi')) openPOS();
+  });
+
+  // ✅ Inisialisasi Auth
+  loadAuthSession();
+  renderUserMenu();
+
+  // Tutup dropdown user ketika klik di luar
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-menu-wrapper')) {
+      closeUserDropdown();
+    }
   });
 }
 
