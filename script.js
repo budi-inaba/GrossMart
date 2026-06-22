@@ -87,6 +87,73 @@ let authState = {
 // Flag untuk mode halaman login wajib (tidak bisa ditutup manual)
 let isLoginScreenMode = false;
 
+// ========================================
+// SETTINGS STATE
+// ========================================
+let settingsState = {
+  activeSection: 'store',
+  data: {
+    // Informasi Toko
+    storeName: 'GrossMart',
+    storeAddress: 'Jl. Merdeka No. 123, Jakarta Pusat',
+    storePhone: '021-12345678',
+    storeEmail: 'info@grossmart.com',
+    storeLogo: 'asset/logo-rptra.png',
+    storeFooter: 'Terima kasih atas kunjungan Anda!',
+    
+    // Tampilan
+    theme: 'light',
+    language: 'id',
+    fontSize: 'medium',
+    
+    // Transaksi
+    currency: 'IDR',
+    taxEnabled: true,
+    taxRate: 10,
+    defaultDiscount: 0,
+    dateFormat: 'DD/MM/YYYY',
+    transactionPrefix: 'TRX',
+    
+    // Pencetakan
+    paperSize: '58mm',
+    autoPrint: false,
+    showLogoOnReceipt: true,
+    showFooterOnReceipt: true,
+    
+    // Notifikasi
+    notifLowStock: true,
+    notifTransaction: true,
+    notifDailyReport: false,
+    notifSound: true,
+    
+    // Backup
+    lastBackup: '2025-01-15 09:30',
+    autoBackup: true,
+  }
+};
+
+function loadSettingsFromStorage() {
+  try {
+    const saved = localStorage.getItem('grossmart_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      settingsState.data = { ...settingsState.data, ...parsed };
+    }
+  } catch (e) {
+    console.warn('Gagal memuat pengaturan:', e);
+  }
+}
+
+function saveSettingsToStorage() {
+  try {
+    localStorage.setItem('grossmart_settings', JSON.stringify(settingsState.data));
+    return true;
+  } catch (e) {
+    console.warn('Gagal menyimpan pengaturan:', e);
+    return false;
+  }
+}
+
 // Mock users database (bisa diganti dengan API call)
 const mockUsers = [
   { username: 'admin', password: 'admin123', nama: 'Administrator', role: 'Admin' },
@@ -477,6 +544,693 @@ function showLoginSuccess() {
     </div>
   `;
   if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ========================================
+// SETTINGS MODAL
+// ========================================
+function showSettingsModal() {
+  // 🔒 Proteksi: Hanya Admin
+  if (!checkAdminAccess()) {
+    alert('⛔ Akses Ditolak!\n\nFitur Pengaturan hanya dapat diakses oleh Administrator.');
+    return;
+  }
+
+  closeUserDropdown();
+  loadSettingsFromStorage();
+
+  const sections = [
+    { id: 'store', label: 'Informasi Toko', icon: 'store', color: '#0d9488' },
+    { id: 'appearance', label: 'Tampilan', icon: 'palette', color: '#8b5cf6' },
+    { id: 'transaction', label: 'Transaksi & Pajak', icon: 'receipt', color: '#2563eb' },
+    { id: 'printing', label: 'Pencetakan', icon: 'printer', color: '#d97706' },
+    { id: 'notifications', label: 'Notifikasi', icon: 'bell', color: '#dc2626' },
+    { id: 'backup', label: 'Backup & Data', icon: 'database', color: '#059669' },
+    { id: 'about', label: 'Tentang', icon: 'info', color: '#64748b' },
+  ];
+
+  const settingsHtml = `
+    <div class="settings-modal-overlay active" id="settingsModalOverlay">
+      <div class="settings-modal">
+        
+        <!-- Sidebar -->
+        <aside class="settings-sidebar">
+          <div class="settings-sidebar-header">
+            <div class="settings-sidebar-icon">
+              <i data-lucide="settings" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2>Pengaturan</h2>
+              <p>Konfigurasi Sistem</p>
+            </div>
+          </div>
+          
+          <nav class="settings-nav">
+            ${sections.map(s => `
+              <button class="settings-nav-item ${settingsState.activeSection === s.id ? 'active' : ''}" 
+                      data-section="${s.id}"
+                      style="--nav-color: ${s.color}">
+                <i data-lucide="${s.icon}" class="w-4 h-4"></i>
+                <span>${s.label}</span>
+              </button>
+            `).join('')}
+          </nav>
+          
+          <div class="settings-sidebar-footer">
+            <button class="settings-close-sidebar-btn" id="settingsCloseBtn">
+              <i data-lucide="x" class="w-4 h-4"></i>
+              <span>Tutup</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="settings-main">
+          <div class="settings-main-header">
+            <div>
+              <h2 id="settingsSectionTitle">${getSectionTitle(settingsState.activeSection)}</h2>
+              <p id="settingsSectionDesc">${getSectionDesc(settingsState.activeSection)}</p>
+            </div>
+            <button class="settings-mobile-close" id="settingsMobileCloseBtn">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          
+          <div class="settings-content" id="settingsContent">
+            ${renderSettingsSection(settingsState.activeSection)}
+          </div>
+          
+          <div class="settings-footer">
+            <button class="settings-btn settings-btn-ghost" id="settingsResetBtn">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              Reset Default
+            </button>
+            <button class="settings-btn settings-btn-primary" id="settingsSaveBtn">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              Simpan Perubahan
+            </button>
+          </div>
+        </main>
+
+      </div>
+    </div>
+  `;
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = settingsHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  setupSettingsEventListeners();
+}
+
+function getSectionTitle(sectionId) {
+  const titles = {
+    store: 'Informasi Toko',
+    appearance: 'Tampilan & Bahasa',
+    transaction: 'Transaksi & Pajak',
+    printing: 'Pengaturan Pencetakan',
+    notifications: 'Notifikasi',
+    backup: 'Backup & Data',
+    about: 'Tentang Aplikasi'
+  };
+  return titles[sectionId] || 'Pengaturan';
+}
+
+function getSectionDesc(sectionId) {
+  const descs = {
+    store: 'Kelola informasi dasar toko Anda',
+    appearance: 'Sesuaikan tampilan aplikasi',
+    transaction: 'Atur format transaksi, pajak, dan diskon',
+    printing: 'Konfigurasi struk dan pencetakan',
+    notifications: 'Kelola preferensi notifikasi sistem',
+    backup: 'Cadangkan dan pulihkan data',
+    about: 'Informasi versi dan lisensi aplikasi'
+  };
+  return descs[sectionId] || '';
+}
+
+function renderSettingsSection(sectionId) {
+  const d = settingsState.data;
+  
+  const sections = {
+    store: `
+      <div class="settings-form-grid">
+        <div class="settings-form-group full">
+          <label>Nama Toko <span class="required">*</span></label>
+          <input type="text" id="setStoreName" value="${d.storeName}" placeholder="Nama toko Anda" />
+        </div>
+        <div class="settings-form-group full">
+          <label>Alamat Lengkap</label>
+          <textarea id="setStoreAddress" rows="2" placeholder="Alamat toko">${d.storeAddress}</textarea>
+        </div>
+        <div class="settings-form-group">
+          <label>Nomor Telepon</label>
+          <input type="text" id="setStorePhone" value="${d.storePhone}" placeholder="021-xxxxxxx" />
+        </div>
+        <div class="settings-form-group">
+          <label>Email</label>
+          <input type="email" id="setStoreEmail" value="${d.storeEmail}" placeholder="email@toko.com" />
+        </div>
+        <div class="settings-form-group full">
+          <label>Logo Toko</label>
+          <div class="settings-logo-upload">
+            <div class="settings-logo-preview">
+              <img src="${d.storeLogo}" alt="Logo" onerror="this.src='asset/logo-rptra.png'" />
+            </div>
+            <div class="settings-logo-info">
+              <input type="text" id="setStoreLogo" value="${d.storeLogo}" placeholder="path/ke/logo.png" />
+              <small>Format: PNG, JPG (Maks. 2MB)</small>
+            </div>
+          </div>
+        </div>
+        <div class="settings-form-group full">
+          <label>Footer Struk</label>
+          <textarea id="setStoreFooter" rows="2" placeholder="Pesan di bagian bawah struk">${d.storeFooter}</textarea>
+        </div>
+      </div>
+    `,
+    
+    appearance: `
+      <div class="settings-section-block">
+        <h3>Tema Aplikasi</h3>
+        <div class="settings-theme-grid">
+          ${['light', 'dark', 'auto'].map(t => `
+            <label class="settings-theme-option ${d.theme === t ? 'selected' : ''}">
+              <input type="radio" name="theme" value="${t}" ${d.theme === t ? 'checked' : ''} />
+              <div class="theme-preview theme-${t}">
+                <div class="theme-preview-header"></div>
+                <div class="theme-preview-body">
+                  <div class="theme-preview-line"></div>
+                  <div class="theme-preview-line short"></div>
+                </div>
+              </div>
+              <span>${t === 'light' ? 'Terang' : t === 'dark' ? 'Gelap' : 'Otomatis'}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Bahasa</h3>
+        <select id="setLanguage" class="settings-select">
+          <option value="id" ${d.language === 'id' ? 'selected' : ''}>🇮🇩 Bahasa Indonesia</option>
+          <option value="en" ${d.language === 'en' ? 'selected' : ''}>🇬🇧 English</option>
+        </select>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Ukuran Font</h3>
+        <div class="settings-radio-group">
+          ${['small', 'medium', 'large'].map(s => `
+            <label class="settings-radio-item">
+              <input type="radio" name="fontSize" value="${s}" ${d.fontSize === s ? 'checked' : ''} />
+              <span>${s === 'small' ? 'Kecil' : s === 'medium' ? 'Sedang' : 'Besar'}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `,
+    
+    transaction: `
+      <div class="settings-section-block">
+        <h3>Format Transaksi</h3>
+        <div class="settings-form-grid">
+          <div class="settings-form-group">
+            <label>Mata Uang</label>
+            <select id="setCurrency" class="settings-select">
+              <option value="IDR" ${d.currency === 'IDR' ? 'selected' : ''}>IDR - Rupiah (Rp)</option>
+              <option value="USD" ${d.currency === 'USD' ? 'selected' : ''}>USD - Dollar ($)</option>
+            </select>
+          </div>
+          <div class="settings-form-group">
+            <label>Format Tanggal</label>
+            <select id="setDateFormat" class="settings-select">
+              <option value="DD/MM/YYYY" ${d.dateFormat === 'DD/MM/YYYY' ? 'selected' : ''}>DD/MM/YYYY</option>
+              <option value="MM/DD/YYYY" ${d.dateFormat === 'MM/DD/YYYY' ? 'selected' : ''}>MM/DD/YYYY</option>
+              <option value="YYYY-MM-DD" ${d.dateFormat === 'YYYY-MM-DD' ? 'selected' : ''}>YYYY-MM-DD</option>
+            </select>
+          </div>
+          <div class="settings-form-group full">
+            <label>Prefix Nomor Transaksi</label>
+            <input type="text" id="setTransactionPrefix" value="${d.transactionPrefix}" placeholder="TRX" />
+            <small>Contoh: ${d.transactionPrefix}-20250115-001</small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Pajak & Diskon</h3>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Aktifkan Pajak (PPN)</div>
+            <div class="toggle-row-desc">Terapkan pajak pada setiap transaksi</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setTaxEnabled" ${d.taxEnabled ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-form-grid" style="margin-top: 12px;">
+          <div class="settings-form-group">
+            <label>Tarif Pajak (%)</label>
+            <input type="number" id="setTaxRate" value="${d.taxRate}" min="0" max="100" />
+          </div>
+          <div class="settings-form-group">
+            <label>Diskon Default (%)</label>
+            <input type="number" id="setDefaultDiscount" value="${d.defaultDiscount}" min="0" max="100" />
+          </div>
+        </div>
+      </div>
+    `,
+    
+    printing: `
+      <div class="settings-section-block">
+        <h3>Ukuran Kertas Struk</h3>
+        <div class="settings-radio-group">
+          ${['58mm', '80mm', 'A4'].map(p => `
+            <label class="settings-radio-item">
+              <input type="radio" name="paperSize" value="${p}" ${d.paperSize === p ? 'checked' : ''} />
+              <span>${p}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Opsi Pencetakan</h3>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Auto-Print Struk</div>
+            <div class="toggle-row-desc">Otomatis cetak struk setelah transaksi</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setAutoPrint" ${d.autoPrint ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Tampilkan Logo di Struk</div>
+            <div class="toggle-row-desc">Cetak logo toko di bagian atas struk</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setShowLogo" ${d.showLogoOnReceipt ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Tampilkan Footer di Struk</div>
+            <div class="toggle-row-desc">Cetak pesan footer di bagian bawah struk</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setShowFooter" ${d.showFooterOnReceipt ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Preview Struk</h3>
+        <div class="settings-receipt-preview">
+          <div class="receipt-header">
+            <strong>${d.storeName}</strong>
+            <small>${d.storeAddress}</small>
+            <small>Telp: ${d.storePhone}</small>
+          </div>
+          <div class="receipt-divider"></div>
+          <div class="receipt-item">
+            <span>Contoh Produk</span>
+            <span>${formatRp(10000)}</span>
+          </div>
+          <div class="receipt-divider"></div>
+          <div class="receipt-total">
+            <span>TOTAL</span>
+            <span>${formatRp(10000)}</span>
+          </div>
+          <div class="receipt-footer">
+            <small>${d.storeFooter}</small>
+          </div>
+        </div>
+      </div>
+    `,
+    
+    notifications: `
+      <div class="settings-section-block">
+        <h3>Notifikasi Sistem</h3>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Peringatan Stok Rendah</div>
+            <div class="toggle-row-desc">Tampilkan notifikasi saat stok barang menipis</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setNotifLowStock" ${d.notifLowStock ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Notifikasi Transaksi</div>
+            <div class="toggle-row-desc">Tampilkan notifikasi saat ada transaksi baru</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setNotifTransaction" ${d.notifTransaction ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Laporan Harian</div>
+            <div class="toggle-row-desc">Kirim ringkasan laporan setiap akhir hari</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setNotifDailyReport" ${d.notifDailyReport ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Suara Notifikasi</div>
+            <div class="toggle-row-desc">Putar suara saat ada notifikasi masuk</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setNotifSound" ${d.notifSound ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    `,
+    
+    backup: `
+      <div class="settings-section-block">
+        <h3>Backup Otomatis</h3>
+        <div class="settings-toggle-row">
+          <div>
+            <div class="toggle-row-title">Aktifkan Auto-Backup</div>
+            <div class="toggle-row-desc">Backup data secara otomatis setiap hari</div>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setAutoBackup" ${d.autoBackup ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-info-box">
+          <i data-lucide="info" class="w-4 h-4"></i>
+          <div>
+            <strong>Backup Terakhir:</strong> ${d.lastBackup}
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Aksi Data</h3>
+        <div class="settings-action-grid">
+          <button class="settings-action-btn" onclick="exportData()">
+            <div class="action-icon" style="background: #dbeafe; color: #2563eb;">
+              <i data-lucide="download" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <strong>Export Data</strong>
+              <small>Unduh semua data dalam format JSON</small>
+            </div>
+          </button>
+          <button class="settings-action-btn" onclick="importData()">
+            <div class="action-icon" style="background: #d1fae5; color: #059669;">
+              <i data-lucide="upload" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <strong>Import Data</strong>
+              <small>Muat data dari file backup</small>
+            </div>
+          </button>
+          <button class="settings-action-btn danger" onclick="resetAllData()">
+            <div class="action-icon" style="background: #fee2e2; color: #dc2626;">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <strong>Reset Semua Data</strong>
+              <small>Hapus semua data dan kembalikan ke default</small>
+            </div>
+          </button>
+        </div>
+      </div>
+    `,
+    
+    about: `
+      <div class="settings-about-card">
+        <div class="about-logo">
+          <img src="asset/logo-rptra.png" alt="Logo" onerror="this.style.display='none'" />
+        </div>
+        <h2>GrossMart</h2>
+        <p class="about-version">Versi 1.0.0 (Build 2025.01)</p>
+        <p class="about-desc">Sistem Informasi Pengelolaan Toko Modern</p>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Informasi Aplikasi</h3>
+        <div class="settings-info-list">
+          <div class="info-row">
+            <span>Versi</span>
+            <strong>1.0.0</strong>
+          </div>
+          <div class="info-row">
+            <span>Build Date</span>
+            <strong>15 Januari 2025</strong>
+          </div>
+          <div class="info-row">
+            <span>Developer</span>
+            <strong>GrossMart Team</strong>
+          </div>
+          <div class="info-row">
+            <span>Lisensi</span>
+            <strong>Proprietary</strong>
+          </div>
+          <div class="info-row">
+            <span>Teknologi</span>
+            <strong>HTML, CSS, JavaScript</strong>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-section-block">
+        <h3>Cek Pembaruan</h3>
+        <button class="settings-btn settings-btn-primary" onclick="checkUpdate()">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          Cek Versi Terbaru
+        </button>
+      </div>
+    `
+  };
+  
+  return sections[sectionId] || '';
+}
+
+function setupSettingsEventListeners() {
+  // Close buttons
+  document.getElementById('settingsCloseBtn')?.addEventListener('click', closeSettingsModal);
+  document.getElementById('settingsMobileCloseBtn')?.addEventListener('click', closeSettingsModal);
+  
+  // Click outside
+  document.getElementById('settingsModalOverlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'settingsModalOverlay') closeSettingsModal();
+  });
+  
+  // ESC
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeSettingsModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+  
+  // Nav items
+  document.querySelectorAll('.settings-nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const sectionId = item.dataset.section;
+      switchSettingsSection(sectionId);
+    });
+  });
+  
+  // Save button
+  document.getElementById('settingsSaveBtn')?.addEventListener('click', saveSettings);
+  
+  // Reset button
+  document.getElementById('settingsResetBtn')?.addEventListener('click', resetSettings);
+}
+
+function switchSettingsSection(sectionId) {
+  settingsState.activeSection = sectionId;
+  
+  // Update nav
+  document.querySelectorAll('.settings-nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.section === sectionId);
+  });
+  
+  // Update header
+  document.getElementById('settingsSectionTitle').textContent = getSectionTitle(sectionId);
+  document.getElementById('settingsSectionDesc').textContent = getSectionDesc(sectionId);
+  
+  // Update content with animation
+  const content = document.getElementById('settingsContent');
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(10px)';
+  
+  setTimeout(() => {
+    content.innerHTML = renderSettingsSection(sectionId);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    content.style.transition = 'all 0.3s ease';
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+  }, 150);
+}
+
+function saveSettings() {
+  const section = settingsState.activeSection;
+  const d = settingsState.data;
+  
+  // Collect values based on active section
+  if (section === 'store') {
+    d.storeName = document.getElementById('setStoreName')?.value || d.storeName;
+    d.storeAddress = document.getElementById('setStoreAddress')?.value || d.storeAddress;
+    d.storePhone = document.getElementById('setStorePhone')?.value || d.storePhone;
+    d.storeEmail = document.getElementById('setStoreEmail')?.value || d.storeEmail;
+    d.storeLogo = document.getElementById('setStoreLogo')?.value || d.storeLogo;
+    d.storeFooter = document.getElementById('setStoreFooter')?.value || d.storeFooter;
+  } else if (section === 'appearance') {
+    d.theme = document.querySelector('input[name="theme"]:checked')?.value || d.theme;
+    d.language = document.getElementById('setLanguage')?.value || d.language;
+    d.fontSize = document.querySelector('input[name="fontSize"]:checked')?.value || d.fontSize;
+  } else if (section === 'transaction') {
+    d.currency = document.getElementById('setCurrency')?.value || d.currency;
+    d.dateFormat = document.getElementById('setDateFormat')?.value || d.dateFormat;
+    d.transactionPrefix = document.getElementById('setTransactionPrefix')?.value || d.transactionPrefix;
+    d.taxEnabled = document.getElementById('setTaxEnabled')?.checked ?? d.taxEnabled;
+    d.taxRate = parseInt(document.getElementById('setTaxRate')?.value) || d.taxRate;
+    d.defaultDiscount = parseInt(document.getElementById('setDefaultDiscount')?.value) || d.defaultDiscount;
+  } else if (section === 'printing') {
+    d.paperSize = document.querySelector('input[name="paperSize"]:checked')?.value || d.paperSize;
+    d.autoPrint = document.getElementById('setAutoPrint')?.checked ?? d.autoPrint;
+    d.showLogoOnReceipt = document.getElementById('setShowLogo')?.checked ?? d.showLogoOnReceipt;
+    d.showFooterOnReceipt = document.getElementById('setShowFooter')?.checked ?? d.showFooterOnReceipt;
+  } else if (section === 'notifications') {
+    d.notifLowStock = document.getElementById('setNotifLowStock')?.checked ?? d.notifLowStock;
+    d.notifTransaction = document.getElementById('setNotifTransaction')?.checked ?? d.notifTransaction;
+    d.notifDailyReport = document.getElementById('setNotifDailyReport')?.checked ?? d.notifDailyReport;
+    d.notifSound = document.getElementById('setNotifSound')?.checked ?? d.notifSound;
+  } else if (section === 'backup') {
+    d.autoBackup = document.getElementById('setAutoBackup')?.checked ?? d.autoBackup;
+  }
+  
+  if (saveSettingsToStorage()) {
+    showCartFeedback('✅ Pengaturan berhasil disimpan');
+  } else {
+    showCartFeedback('⚠️ Gagal menyimpan pengaturan');
+  }
+}
+
+function resetSettings() {
+  if (!confirm('⚠️ Kembalikan semua pengaturan ke nilai default?\n\nPerubahan yang belum disimpan akan hilang.')) return;
+  
+  localStorage.removeItem('grossmart_settings');
+  settingsState.data = {
+    storeName: 'GrossMart',
+    storeAddress: 'Jl. Merdeka No. 123, Jakarta Pusat',
+    storePhone: '021-12345678',
+    storeEmail: 'info@grossmart.com',
+    storeLogo: 'asset/logo-rptra.png',
+    storeFooter: 'Terima kasih atas kunjungan Anda!',
+    theme: 'light',
+    language: 'id',
+    fontSize: 'medium',
+    currency: 'IDR',
+    taxEnabled: true,
+    taxRate: 10,
+    defaultDiscount: 0,
+    dateFormat: 'DD/MM/YYYY',
+    transactionPrefix: 'TRX',
+    paperSize: '58mm',
+    autoPrint: false,
+    showLogoOnReceipt: true,
+    showFooterOnReceipt: true,
+    notifLowStock: true,
+    notifTransaction: true,
+    notifDailyReport: false,
+    notifSound: true,
+    lastBackup: '2025-01-15 09:30',
+    autoBackup: true,
+  };
+  
+  // Re-render current section
+  document.getElementById('settingsContent').innerHTML = renderSettingsSection(settingsState.activeSection);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  showCartFeedback('🔄 Pengaturan dikembalikan ke default');
+}
+
+function closeSettingsModal() {
+  const overlay = document.getElementById('settingsModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.remove(), 300);
+  }
+}
+
+// Helper functions for backup
+function exportData() {
+  const data = {
+    settings: settingsState.data,
+    products: mockProducts,
+    sales: mockPenjualan,
+    cash: mockKasHarian,
+    exportDate: new Date().toISOString()
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `grossmart-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showCartFeedback('✅ Data berhasil di-export');
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.settings) settingsState.data = data.settings;
+        showCartFeedback('✅ Data berhasil di-import');
+      } catch (err) {
+        showCartFeedback('⚠️ File tidak valid');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function resetAllData() {
+  if (!confirm('⚠️ PERINGATAN!\n\nSemua data akan dihapus permanen:\n• Data produk\n• Data transaksi\n• Data kas\n• Pengaturan\n\nTindakan ini tidak dapat dibatalkan!')) return;
+  if (!confirm('🔴 Yakin? Ketik OK untuk melanjutkan.')) return;
+  
+  localStorage.clear();
+  sessionStorage.clear();
+  location.reload();
+}
+
+function checkUpdate() {
+  showCartFeedback('✅ Anda menggunakan versi terbaru (1.0.0)');
 }
 
 // ========================================
@@ -963,9 +1717,10 @@ function renderUserMenu() {
             <i data-lucide="user"></i> Profil Saya
           </button>
           
-          <button class="user-dropdown-item" onclick="alert('Fitur pengaturan segera hadir!')">
+          <button class="user-dropdown-item" onclick="showSettingsModal()">
             <i data-lucide="settings"></i> Pengaturan
           </button>
+
           <button class="user-dropdown-item danger" id="logoutBtn">
             <i data-lucide="log-out"></i> Keluar
           </button>
@@ -2197,6 +2952,7 @@ function renderDecoratorLine() {
 function initApp() {
   // ✅ PENTING: Load session auth SEBELUM render UI lainnya
   loadAuthSession();
+  loadSettingsFromStorage(); 
 
   renderDecoratorLine();
   renderBottomNav(); // Sekarang checkAdminAccess() akan bernilai true jika user adalah Admin
