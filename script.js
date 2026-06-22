@@ -3417,15 +3417,199 @@ function renderTabPenjualan() {
 }
 
 function renderTabKasHarian() {
-  return `<div class="space-y-4 pb-20 animate-tab"><div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div><h2 class="text-lg font-bold text-slate-800">Kas Harian</h2><p class="text-sm text-slate-500">Bulan : Januari 2026</p></div><button class="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-lg flex items-center justify-center transition-colors" onclick="window.print()"><i data-lucide="file-text" class="w-5 h-5"></i><span class="hidden sm:inline ml-2 text-sm font-medium">Cetak Laporan</span></button></div><div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm text-left whitespace-nowrap border-collapse"><thead class="text-xs text-white bg-slate-800 text-center"><tr><th rowspan="2" class="px-3 py-2 border border-slate-600">No</th><th rowspan="2" class="px-3 py-2 border border-slate-600">Tanggal</th><th rowspan="2" class="px-3 py-2 border border-slate-600">No. Bukti</th><th rowspan="2" class="px-4 py-2 border border-slate-600 text-left">Uraian</th><th colspan="3" class="px-3 py-2 border border-slate-600 bg-teal-700">Penerimaan</th><th colspan="3" class="px-3 py-2 border border-slate-600 bg-rose-700">Pengeluaran</th><th rowspan="2" class="px-3 py-2 border border-slate-600">Biaya</th><th rowspan="2" class="px-4 py-2 border border-slate-600">Saldo</th></tr><tr><th class="px-3 py-1 border border-slate-600 bg-teal-600">Jml</th><th class="px-3 py-1 border border-slate-600 bg-teal-600">Hrg</th><th class="px-3 py-1 border border-slate-600 bg-teal-600">Total</th><th class="px-3 py-1 border border-slate-600 bg-rose-600">Jml</th><th class="px-3 py-1 border border-slate-600 bg-rose-600">Hrg</th><th class="px-3 py-1 border border-slate-600 bg-rose-600">Total</th></tr></thead><tbody>${mockKasHarian.map((item, index) => `<tr class="border-b hover:bg-slate-50"><td class="px-3 py-2 text-center border-r border-slate-200">${index + 1}</td><td class="px-3 py-2 border-r border-slate-200">${item.tanggal}</td><td class="px-3 py-2 border-r border-slate-200">${item.bukti}</td><td class="px-4 py-2 border-r border-slate-200 font-medium">${item.uraian}</td><td class="px-3 py-2 text-center border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml}</td><td class="px-3 py-2 text-right border-r border-slate-200 text-teal-700 bg-teal-50/30">${formatRp(item.inHrg)}</td><td class="px-3 py-2 text-right border-r border-slate-200 text-teal-700 bg-teal-50/30 font-medium">${formatRp(item.inTot)}</td><td class="px-3 py-2 text-center border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml}</td><td class="px-3 py-2 text-right border-r border-slate-200 text-rose-700 bg-rose-50/30">${formatRp(item.outHrg)}</td><td class="px-3 py-2 text-right border-r border-slate-200 text-rose-700 bg-rose-50/30 font-medium">${formatRp(item.outTot)}</td><td class="px-3 py-2 text-right border-r border-slate-200 text-amber-600">${formatRp(item.biaya)}</td><td class="px-4 py-2 text-right font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <!-- Header Laporan -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex flex-row justify-between items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
+            <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
+          </div>
+          <button class="bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
+            <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
+              <i data-lucide="file-text" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
+            </div>
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Cetak Laporan</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+            <thead class="text-[10px] text-white uppercase tracking-wide">
+              <tr>
+                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No</th>
+                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Tanggal</th>
+                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No. Bukti</th>
+                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800 text-left">Uraian</th>
+                <th colspan="3" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Penerimaan</th>
+                <th colspan="3" class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Pengeluaran</th>
+                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Biaya</th>
+                <th rowspan="2" class="px-2 py-1.5 bg-slate-800">Saldo</th>
+              </tr>
+              <tr>
+                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Jml</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Hrg</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Total</th>
+                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Jml</th>
+                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Hrg</th>
+                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockKasHarian.map((item, index) => `
+                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti}</td>
+                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${formatRp(item.inHrg)}</td>
+                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${formatRp(item.inTot)}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${formatRp(item.outHrg)}</td>
+                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${formatRp(item.outTot)}</td>
+                  <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${formatRp(item.biaya)}</td>
+                  <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderTabStok() {
-  return `<div class="space-y-4 pb-20 animate-tab"><div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 justify-between"><div><h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="package" class="text-teal-600 w-5 h-5"></i> Kartu Stok</h2><div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm"><div class="text-slate-500">Nama Barang</div><div class="font-bold text-slate-800">: ${mockKartuStok.nama}</div><div class="text-slate-500">Kode Barang</div><div class="font-medium text-slate-800">: ${mockKartuStok.kode}</div><div class="text-slate-500">Supplier</div><div class="font-medium text-slate-800">: ${mockKartuStok.supplier}</div><div class="text-slate-500">No. Kontak</div><div class="font-medium text-slate-800">: ${mockKartuStok.kontak}</div></div></div><div class="flex flex-col gap-2 justify-end"><div class="relative"><i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i><input type="text" placeholder="Cari barang lain..." class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm w-full outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500" /></div></div></div><div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm text-center whitespace-nowrap"><thead class="text-xs text-slate-700 bg-slate-100 uppercase"><tr><th class="px-4 py-3 text-left border-b border-slate-200">Tanggal</th><th class="px-4 py-3 border-b border-slate-200 text-teal-700">Masuk</th><th class="px-4 py-3 border-b border-slate-200 text-rose-700">Keluar</th><th class="px-4 py-3 border-b border-slate-200 font-bold bg-slate-200">Sisa</th><th class="px-4 py-3 border-b border-slate-200">Paraf</th></tr></thead><tbody>${mockKartuStok.riwayat.map((item) => `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="px-4 py-3 text-left ${item.tanggal.includes('SISA') ? 'font-bold bg-slate-50' : ''}">${item.tanggal}</td><td class="px-4 py-3 text-teal-600 font-medium">${item.masuk}</td><td class="px-4 py-3 text-rose-600 font-medium">${item.keluar}</td><td class="px-4 py-3 font-bold bg-slate-50 text-slate-800 text-lg">${item.sisa}</td><td class="px-4 py-3 text-slate-400">${item.paraf}</td></tr>`).join('')}</tbody></table></div></div><div class="bg-amber-50 rounded-xl p-4 border border-amber-200"><h4 class="font-bold text-amber-800 text-sm mb-1">Catatan Pengisian:</h4><ol class="list-decimal pl-5 text-xs text-amber-700 space-y-1"><li>Kartu stok dibuat per item barang.</li><li>Kartu stok diisi setiap ada transaksi dan diparaf.</li><li>Pengisian kartu stok berlanjut.</li><li>Setiap pengisian lembar baru, dituliskan saldo akhir barang.</li></ol></div></div>`;
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <!-- Header Laporan -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex flex-col md:flex-row gap-4 justify-between">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-800 truncate flex items-center gap-2">
+              <i data-lucide="package" class="text-teal-600 w-5 h-5"></i>
+              Kartu Stok
+            </h2>
+            <p class="text-xs text-slate-500">Nama: ${mockKartuStok.nama} • Kode: ${mockKartuStok.kode}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-xs mt-2 md:mt-0">
+            <div class="text-slate-500">Supplier</div>
+            <div class="font-medium text-slate-800">: ${mockKartuStok.supplier}</div>
+            <div class="text-slate-500">No. Kontak</div>
+            <div class="font-medium text-slate-800">: ${mockKartuStok.kontak}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+            <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
+              <tr>
+                <th class="px-2 py-1.5 border-r border-teal-500">No</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 text-left">Tanggal</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 text-teal-100">Masuk</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 text-rose-100">Keluar</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 font-bold">Sisa</th>
+                <th class="px-2 py-1.5">Paraf</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockKartuStok.riwayat.map((item, index) => `
+                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left ${item.tanggal.includes('SISA') ? 'font-bold bg-slate-50' : ''}">${item.tanggal}</td>
+                  <td class="px-2 py-1.5 text-teal-600 border-r border-slate-200">${item.masuk}</td>
+                  <td class="px-2 py-1.5 text-rose-600 border-r border-slate-200">${item.keluar}</td>
+                  <td class="px-2 py-1.5 font-bold border-r border-slate-200 bg-slate-50 text-slate-800">${item.sisa}</td>
+                  <td class="px-2 py-1.5 text-slate-400">${item.paraf}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Catatan -->
+      <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+        <h4 class="font-bold text-amber-800 text-sm mb-1">Catatan Pengisian:</h4>
+        <ol class="list-decimal pl-5 text-xs text-amber-700 space-y-1">
+          <li>Kartu stok dibuat per item barang.</li>
+          <li>Kartu stok diisi setiap ada transaksi dan diparaf.</li>
+          <li>Pengisian kartu stok berlanjut.</li>
+          <li>Setiap pengisian lembar baru, dituliskan saldo akhir barang.</li>
+        </ol>
+      </div>
+    </div>
+  `;
 }
 
 function renderTabRekap() {
-  return `<div class="space-y-4 pb-20 animate-tab"><div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center"><h2 class="text-xl font-bold text-slate-800">Rekap Laporan Keuangan</h2><p class="text-slate-500 font-medium">Tahun 2026</p></div><div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm text-left whitespace-nowrap border-collapse"><thead><tr><th colspan="4" class="px-4 py-3 border border-slate-300 bg-teal-600 text-white text-center font-bold text-base">PENERIMAAN</th><th colspan="4" class="px-4 py-3 border border-slate-300 bg-rose-600 text-white text-center font-bold text-base">PENGELUARAN</th></tr><tr class="bg-slate-100 text-slate-700 text-xs uppercase"><th class="px-3 py-2 text-center border border-slate-300 w-10">No</th><th class="px-4 py-2 border border-slate-300">Bulan</th><th class="px-4 py-2 border border-slate-300">Uraian</th><th class="px-4 py-2 border border-slate-300 text-right">Jumlah</th><th class="px-3 py-2 text-center border border-slate-300 w-10">No</th><th class="px-4 py-2 border border-slate-300">Bulan</th><th class="px-4 py-2 border border-slate-300">Uraian</th><th class="px-4 py-2 border border-slate-300 text-right">Jumlah</th></tr></thead><tbody>${mockRekap.map((item, index) => `<tr class="hover:bg-slate-50"><td class="px-3 py-2 text-center border border-slate-200 text-slate-500">${item.blnIn ? index + 1 : ''}</td><td class="px-4 py-2 border border-slate-200 font-medium">${item.blnIn}</td><td class="px-4 py-2 border border-slate-200">${item.uraianIn}</td><td class="px-4 py-2 border border-slate-200 text-right text-teal-600 font-medium">${formatRp(item.jmlIn)}</td><td class="px-3 py-2 text-center border border-slate-200 text-slate-500">${item.blnOut ? index + 5 : ''}</td><td class="px-4 py-2 border border-slate-200 font-medium">${item.blnOut}</td><td class="px-4 py-2 border border-slate-200">${item.uraianOut}</td><td class="px-4 py-2 border border-slate-200 text-right text-rose-600 font-medium">${formatRp(item.jmlOut)}</td></tr>`).join('')}</tbody><tfoot class="bg-slate-800 text-white font-bold"><tr><td colspan="3" class="px-4 py-3 text-right border border-slate-700">JUMLAH PENERIMAAN</td><td class="px-4 py-3 text-right border border-slate-700 text-teal-400">${formatRp(633000)}</td><td colspan="3" class="px-4 py-3 text-right border border-slate-700">JUMLAH PENGELUARAN</td><td class="px-4 py-3 text-right border border-slate-700 text-rose-400">${formatRp(620400)}</td></tr></tfoot></table></div></div><div class="flex justify-end mt-4 text-sm font-medium"><div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 min-w-[250px]"><div class="flex justify-between mb-2"><span class="text-slate-600">Total Penerimaan:</span><span class="text-teal-600 font-bold">${formatRp(633000)}</span></div><div class="flex justify-between mb-2 pb-2 border-b border-slate-200"><span class="text-slate-600">Total Pengeluaran:</span><span class="text-rose-600 font-bold">${formatRp(620400)}</span></div><div class="flex justify-between mt-2 text-lg"><span class="text-slate-800 font-bold">Keuntungan Bersih:</span><span class="text-teal-600 font-black">${formatRp(12600)}</span></div></div></div></div>`;
+  return `
+    <div class="space-y-4 pb-20 animate-tab">
+      <!-- Header Laporan -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+        <h2 class="text-lg font-bold text-slate-800 truncate">Rekap Laporan Keuangan</h2>
+        <p class="text-xs text-slate-500">Tahun 2026</p>
+      </div>
+
+      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+            <thead class="text-[10px] text-white uppercase tracking-wide">
+              <tr>
+                <th colspan="4" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600 text-base font-bold">PENERIMAAN</th>
+                <th colspan="4" class="px-2 py-1.5 bg-rose-600 text-base font-bold">PENGELUARAN</th>
+              </tr>
+              <tr class="bg-slate-100 text-slate-700">
+                <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
+                <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
+                <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
+                <th class="px-2 py-1.5 border-r border-teal-500 text-right">Jumlah</th>
+                <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
+                <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
+                <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
+                <th class="px-2 py-1.5 text-right">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockRekap.map((item, index) => `
+                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnIn ? index + 1 : ''}</td>
+                  <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnIn}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianIn}</td>
+                  <td class="px-2 py-1.5 text-right text-teal-600 font-medium border-r border-teal-500">${formatRp(item.jmlIn)}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnOut ? index + 5 : ''}</td>
+                  <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnOut}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianOut}</td>
+                  <td class="px-2 py-1.5 text-right text-rose-600 font-medium">${formatRp(item.jmlOut)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot class="bg-teal-50 font-bold">
+              <tr>
+                <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENERIMAAN</td>
+                <td class="px-2 py-1.5 text-right text-teal-700 border-r border-teal-500">${formatRp(633000)}</td>
+                <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENGELUARAN</td>
+                <td class="px-2 py-1.5 text-right text-rose-700">${formatRp(620400)}</td>
+              </tr>
+              <tr>
+                <td colspan="7" class="px-2 py-1.5 text-right border-r border-slate-200 bg-slate-100">KEUNTUNGAN BERSIH</td>
+                <td class="px-2 py-1.5 text-right font-bold text-teal-700 bg-slate-100">${formatRp(12600)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderContent(tabId) {
