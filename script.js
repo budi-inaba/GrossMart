@@ -53,6 +53,9 @@ let authState = {
   rememberMe: false,
 };
 
+// Flag untuk mode halaman login wajib (tidak bisa ditutup manual)
+let isLoginScreenMode = false;
+
 // Mock users database (bisa diganti dengan API call)
 const mockUsers = [
   { username: 'admin', password: 'admin123', nama: 'Administrator', role: 'Admin' },
@@ -267,7 +270,43 @@ function openLoginModal() {
   setupLoginEventListeners();
 }
 
+function showLoginScreen() {
+  isLoginScreenMode = true;
+  
+  let overlay = document.getElementById('loginOverlay');
+  if (!overlay) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = renderLoginModal();
+    document.body.appendChild(wrapper.firstElementChild);
+    overlay = document.getElementById('loginOverlay');
+  }
+  
+  overlay.classList.add('active');
+  
+  // Sembunyikan tombol close (X) karena ini halaman login wajib
+  const closeBtn = document.getElementById('loginCloseBtn');
+  if (closeBtn) closeBtn.style.display = 'none';
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  document.body.style.overflow = 'hidden';
+  
+  // Reset form state
+  const form = document.getElementById('loginForm');
+  if (form) form.reset();
+  hideLoginError();
+  
+  // Focus ke username
+  setTimeout(() => {
+    document.getElementById('loginUsername')?.focus();
+  }, 300);
+  
+  setupLoginEventListeners();
+}
+
 function closeLoginModal() {
+  // 🚫 Cegah penutupan jika dalam mode halaman login wajib
+  if (isLoginScreenMode) return;
+  
   const overlay = document.getElementById('loginOverlay');
   if (overlay) {
     overlay.classList.remove('active');
@@ -285,22 +324,25 @@ function setupLoginEventListeners() {
   const toggleBtn = document.getElementById('togglePwdBtn');
 
   if (form) form.addEventListener('submit', handleLoginSubmit);
-  if (closeBtn) closeBtn.addEventListener('click', closeLoginModal);
-  if (overlay) {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeLoginModal();
-    });
-  }
   if (toggleBtn) toggleBtn.addEventListener('click', togglePasswordVisibility);
 
-  // ESC untuk menutup
-  const escHandler = (e) => {
-    if (e.key === 'Escape') {
-      closeLoginModal();
-      document.removeEventListener('keydown', escHandler);
+  // ✅ Hanya tambahkan event close jika BUKAN mode halaman login wajib
+  if (!isLoginScreenMode) {
+    if (closeBtn) closeBtn.addEventListener('click', closeLoginModal);
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeLoginModal();
+      });
     }
-  };
-  document.addEventListener('keydown', escHandler);
+    // ESC untuk menutup
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        closeLoginModal();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+  }
 }
 
 function togglePasswordVisibility() {
@@ -371,6 +413,8 @@ function handleLoginSubmit(e) {
       showLoginSuccess();
 
       setTimeout(() => {
+        // ✅ Reset flag mode login screen
+        isLoginScreenMode = false;
         closeLoginModal();
         renderUserMenu();
         renderBottomNav(); // ✅ Refresh bottom nav untuk tampilkan/sembunyikan tab Master Data
@@ -419,6 +463,9 @@ function handleLogout() {
   renderBottomNav(); // ✅ Refresh bottom nav
   switchTab('penjualan'); // ✅ Reset ke tab penjualan
   showCartFeedback('👋 Anda telah keluar');
+
+  // ✅ Panggil kembali halaman login wajib setelah logout
+  showLoginScreen();
 }
 
 function renderUserMenu() {
@@ -1443,6 +1490,11 @@ function initApp() {
       closeUserDropdown();
     }
   });
+
+  // ✅ Tampilkan halaman login otomatis jika user belum login
+  if (!authState.isLoggedIn) {
+    showLoginScreen();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
