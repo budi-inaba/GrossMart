@@ -2690,7 +2690,7 @@ async function deleteMasterData(id) {
   const product = mockProducts.find(p => p.id === id);
   if (!product) return;
 
-  if (!await CustomConfirm.show(`Hapus barang "${product.nama}"?\nData yang dihapus tidak dapat dikembalikan.`, {
+  if (!await CustomConfirm.show(`Hapus barang "${product.nama}" ?\nData yang dihapus tidak dapat dikembalikan.`, {
     type: 'danger',
     confirmText: 'Hapus',
     cancelText: 'Batal',
