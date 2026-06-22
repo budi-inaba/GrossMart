@@ -1908,6 +1908,10 @@ function closeUserDropdown() {
   if (dropdown) dropdown.classList.remove('active');
 }
 
+let kartuStokState = {
+  selectedProductId: 6, // Default: Aqua Gelas (AG)
+};
+
 // ========================================
 // MASTER DATA BARANG (Admin Only)
 // ========================================
@@ -2706,14 +2710,14 @@ async function deleteMasterData(id) {
 // MASTER DATA BARANG (Bisa diedit)
 // ========================================
 let mockProducts = [
-  { id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream', stok: 50 },
-  { id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream', stok: 35 },
-  { id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream', stok: 28 },
-  { id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream', stok: 42 },
-  { id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream', stok: 15 },
-  { id: 6, nama: 'Aqua Gelas', kode: 'AG', harga: 500, hargaBeli: 300, image: '', kategori: 'Minuman', stok: 120 },
-  { id: 7, nama: 'Aqua Botol 600ml', kode: 'AB', harga: 3000, hargaBeli: 2500, image: '', kategori: 'Minuman', stok: 80 },
-  { id: 8, nama: 'Nasi Uduk', kode: 'NU', harga: 7000, hargaBeli: 6000, image: '', kategori: 'Makanan', stok: 5 },
+  { id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream', stok: 50, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+  { id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream', stok: 35, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+  { id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream', stok: 28, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+  { id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream', stok: 42, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+  { id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream', stok: 15, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+  { id: 6, nama: 'Aqua Gelas', kode: 'AG', harga: 500, hargaBeli: 300, image: '', kategori: 'Minuman', stok: 120, supplier: 'PT TIRTA', kontak: '08123456789' },
+  { id: 7, nama: 'Aqua Botol 600ml', kode: 'AB', harga: 3000, hargaBeli: 2500, image: '', kategori: 'Minuman', stok: 80, supplier: 'PT TIRTA', kontak: '08123456789' },
+  { id: 8, nama: 'Nasi Uduk', kode: 'NU', harga: 7000, hargaBeli: 6000, image: '', kategori: 'Makanan', stok: 5, supplier: 'Dapur Bu Siti', kontak: '082198765432' },
 ];
 
 const kategoriList = ['Ice Cream', 'Minuman', 'Makanan', 'Snack', 'Lainnya'];
@@ -3485,28 +3489,76 @@ function renderTabKasHarian() {
 }
 
 function renderTabStok() {
+  const selectedProduct = mockProducts.find(p => p.id === kartuStokState.selectedProductId);
+  
+  // Generate riwayat stok berdasarkan produk yang dipilih (untuk demo)
+  const riwayatStok = generateStokHistory(selectedProduct);
+  
   return `
     <div class="space-y-4 pb-20 animate-tab">
-      <!-- Header Laporan -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div class="flex flex-col md:flex-row gap-4 justify-between">
-          <div class="min-w-0 flex-1">
-            <h2 class="text-lg font-bold text-slate-800 truncate flex items-center gap-2">
-              <i data-lucide="package" class="text-teal-600 w-5 h-5"></i>
-              Kartu Stok
-            </h2>
-            <p class="text-xs text-slate-500">Nama: ${mockKartuStok.nama} • Kode: ${mockKartuStok.kode}</p>
+      <!-- Header Kartu Stok -->
+      <div class="stok-card">
+        <div class="stok-card-header">
+          <div class="stok-card-icon">
+            <i data-lucide="package" class="w-6 h-6"></i>
           </div>
-          <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-xs mt-2 md:mt-0">
-            <div class="text-slate-500">Supplier</div>
-            <div class="font-medium text-slate-800">: ${mockKartuStok.supplier}</div>
-            <div class="text-slate-500">No. Kontak</div>
-            <div class="font-medium text-slate-800">: ${mockKartuStok.kontak}</div>
+          <div class="stok-card-title">
+            <h2>Kartu Stok Barang</h2>
+            <p>Pantau pergerakan stok barang secara detail</p>
           </div>
         </div>
+        
+        <!-- Dropdown Pilih Barang -->
+        <div class="stok-selector">
+          <label for="stokProductSelect" class="stok-selector-label">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            Pilih Barang
+          </label>
+          <select id="stokProductSelect" class="stok-selector-dropdown">
+            ${mockProducts.map(p => `
+              <option value="${p.id}" ${p.id === kartuStokState.selectedProductId ? 'selected' : ''}>
+                ${p.nama}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+        
+        <!-- Info Barang -->
+        ${selectedProduct ? `
+        <div class="stok-info-grid">
+          <div class="stok-info-item">
+            <div class="stok-info-label">
+              <i data-lucide="package" class="w-3.5 h-3.5"></i>
+              Nama Barang
+            </div>
+            <div class="stok-info-value">${selectedProduct.nama}</div>
+          </div>
+          <div class="stok-info-item">
+            <div class="stok-info-label">
+              <i data-lucide="hash" class="w-3.5 h-3.5"></i>
+              Kode Barang
+            </div>
+            <div class="stok-info-value code">${selectedProduct.kode}</div>
+          </div>
+          <div class="stok-info-item">
+            <div class="stok-info-label">
+              <i data-lucide="truck" class="w-3.5 h-3.5"></i>
+              Supplier
+            </div>
+            <div class="stok-info-value">${selectedProduct.supplier || '-'}</div>
+          </div>
+          <div class="stok-info-item">
+            <div class="stok-info-label">
+              <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+              No. Kontak
+            </div>
+            <div class="stok-info-value">${selectedProduct.kontak || '-'}</div>
+          </div>
+        </div>
+        ` : ''}
       </div>
 
-      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
+      <!-- Tabel Riwayat Stok -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
@@ -3514,19 +3566,19 @@ function renderTabStok() {
               <tr>
                 <th class="px-2 py-1.5 border-r border-teal-500">No</th>
                 <th class="px-2 py-1.5 border-r border-teal-500 text-left">Tanggal</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 text-teal-100">Masuk</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 text-rose-100">Keluar</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Masuk</th>
+                <th class="px-2 py-1.5 border-r border-teal-500">Keluar</th>
                 <th class="px-2 py-1.5 border-r border-teal-500 font-bold">Sisa</th>
                 <th class="px-2 py-1.5">Paraf</th>
               </tr>
             </thead>
             <tbody>
-              ${mockKartuStok.riwayat.map((item, index) => `
+              ${riwayatStok.map((item, index) => `
                 <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                   <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
                   <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left ${item.tanggal.includes('SISA') ? 'font-bold bg-slate-50' : ''}">${item.tanggal}</td>
-                  <td class="px-2 py-1.5 text-teal-600 border-r border-slate-200">${item.masuk}</td>
-                  <td class="px-2 py-1.5 text-rose-600 border-r border-slate-200">${item.keluar}</td>
+                  <td class="px-2 py-1.5 text-teal-600 font-medium border-r border-slate-200">${item.masuk || '-'}</td>
+                  <td class="px-2 py-1.5 text-rose-600 font-medium border-r border-slate-200">${item.keluar || '-'}</td>
                   <td class="px-2 py-1.5 font-bold border-r border-slate-200 bg-slate-50 text-slate-800">${item.sisa}</td>
                   <td class="px-2 py-1.5 text-slate-400">${item.paraf}</td>
                 </tr>
@@ -3536,10 +3588,13 @@ function renderTabStok() {
         </div>
       </div>
 
-      <!-- Catatan -->
-      <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
-        <h4 class="font-bold text-amber-800 text-sm mb-1">Catatan Pengisian:</h4>
-        <ol class="list-decimal pl-5 text-xs text-amber-700 space-y-1">
+      <!-- Catatan Pengisian -->
+      <div class="stok-notes">
+        <div class="stok-notes-header">
+          <i data-lucide="info" class="w-4 h-4"></i>
+          <h4>Catatan Pengisian</h4>
+        </div>
+        <ol class="stok-notes-list">
           <li>Kartu stok dibuat per item barang.</li>
           <li>Kartu stok diisi setiap ada transaksi dan diparaf.</li>
           <li>Pengisian kartu stok berlanjut.</li>
@@ -3548,6 +3603,22 @@ function renderTabStok() {
       </div>
     </div>
   `;
+}
+
+function generateStokHistory(product) {
+  if (!product) return [];
+  
+  // Generate dummy history based on product
+  const baseStock = product.stok || 0;
+  const history = [
+    { id: 1, tanggal: 'SISA AKHIR BULAN LALU', masuk: '', keluar: '', sisa: Math.floor(baseStock * 0.3), paraf: '✓' },
+    { id: 2, tanggal: '1 BULAN INI', masuk: Math.floor(baseStock * 0.8), keluar: '', sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8), paraf: '✓' },
+    { id: 3, tanggal: '5 BULAN INI', masuk: '', keluar: Math.floor(baseStock * 0.2), sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8) - Math.floor(baseStock * 0.2), paraf: '✓' },
+    { id: 4, tanggal: '10 BULAN INI', masuk: '', keluar: Math.floor(baseStock * 0.15), sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8) - Math.floor(baseStock * 0.2) - Math.floor(baseStock * 0.15), paraf: '✓' },
+    { id: 5, tanggal: '15 BULAN INI', masuk: Math.floor(baseStock * 0.5), keluar: '', sisa: baseStock, paraf: '✓' },
+  ];
+  
+  return history;
 }
 
 function renderTabRekap() {
@@ -3658,12 +3729,34 @@ function switchTab(tabId) {
       setTimeout(() => animatedContent.style.animation = 'fadeInZoom 0.2s ease-out forwards', 10);
     }
     
-    // ✅ Setup listeners khusus Master Data
+    // ✅ Setup listeners khusus
     if (tabId === 'master') {
       setupMasterDataListeners();
     }
+    if (tabId === 'stok') {
+      setupStokListeners();
+    }
   }
   renderBottomNav();
+}
+
+function setupStokListeners() {
+  const selectDropdown = document.getElementById('stokProductSelect');
+  if (selectDropdown) {
+    selectDropdown.addEventListener('change', (e) => {
+      kartuStokState.selectedProductId = parseInt(e.target.value);
+      refreshStokView();
+    });
+  }
+}
+
+function refreshStokView() {
+  const mainContent = document.getElementById('mainContent');
+  if (mainContent && activeTab === 'stok') {
+    mainContent.innerHTML = renderTabStok();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    setupStokListeners();
+  }
 }
 
 function renderDecoratorLine() {
