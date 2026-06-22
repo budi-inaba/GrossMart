@@ -234,6 +234,132 @@ function clearAuthSession() {
 }
 
 // ========================================
+// NOTIFICATION SYSTEM (PROFESIONAL)
+// ========================================
+const Notification = {
+  container: null,
+  
+  init() {
+    if (!this.container) {
+      this.container = document.createElement('div');
+      this.container.className = 'notification-container position-top-right';
+      document.body.appendChild(this.container);
+    }
+  },
+  
+  show(message, type = 'info', options = {}) {
+    this.init();
+    
+    const config = {
+      duration: options.duration || 3000,
+      closable: options.closable !== false,
+      icon: options.icon !== false,
+      ...options
+    };
+    
+    const notification = this.create(message, type, config);
+    this.container.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    if (config.duration > 0) {
+      setTimeout(() => this.remove(notification), config.duration);
+    }
+    
+    return notification;
+  },
+  
+  create(message, type, config) {
+    const el = document.createElement('div');
+    el.className = `notification notification-${type}`;
+    
+    const icons = { success: 'check-circle', error: 'x-circle', warning: 'alert-triangle', info: 'info' };
+    const titles = { success: 'Berhasil!', error: 'Gagal!', warning: 'Peringatan!', info: 'Informasi' };
+    
+    el.innerHTML = `
+      <div class="notification-content">
+        ${config.icon ? `<div class="notification-icon"><i data-lucide="${icons[type]}" class="w-5 h-5"></i></div>` : ''}
+        <div class="notification-body">
+          <div class="notification-title">${titles[type]}</div>
+          <div class="notification-message">${message}</div>
+        </div>
+        ${config.closable ? `<button class="notification-close" aria-label="Tutup"><i data-lucide="x" class="w-4 h-4"></i></button>` : ''}
+      </div>
+      <div class="notification-progress"></div>
+    `;
+    
+    if (config.closable) {
+      el.querySelector('.notification-close').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.remove(el);
+      });
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return el;
+  },
+  
+  remove(notification) {
+    notification.classList.remove('show');
+    notification.classList.add('hide');
+    setTimeout(() => notification.remove(), 300);
+  },
+  
+  success(message, options) { return this.show(message, 'success', options); },
+  error(message, options) { return this.show(message, 'error', options); },
+  warning(message, options) { return this.show(message, 'warning', options); },
+  info(message, options) { return this.show(message, 'info', options); }
+};
+
+// Custom Confirm Dialog (Pengganti confirm() browser)
+const CustomConfirm = {
+  show(message, options = {}) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'custom-confirm-overlay';
+      
+      const type = options.type || 'warning';
+      const confirmText = options.confirmText || 'Ya, Lanjutkan';
+      const cancelText = options.cancelText || 'Batal';
+      const confirmClass = options.confirmClass || 'btn-danger';
+      
+      const icons = { warning: 'alert-triangle', danger: 'shield-alert', info: 'info', question: 'help-circle' };
+      
+      modal.innerHTML = `
+        <div class="custom-confirm">
+          <div class="custom-confirm-icon ${type}"><i data-lucide="${icons[type]}" class="w-8 h-8"></i></div>
+          <div class="custom-confirm-message">${message}</div>
+          <div class="custom-confirm-actions">
+            <button class="custom-confirm-btn btn-cancel">${cancelText}</button>
+            <button class="custom-confirm-btn ${confirmClass}">${confirmText}</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      setTimeout(() => modal.classList.add('show'), 10);
+      
+      modal.querySelector('.btn-cancel').addEventListener('click', () => { this.hide(modal); resolve(false); });
+      modal.querySelector(`.${confirmClass}`).addEventListener('click', () => { this.hide(modal); resolve(true); });
+      modal.addEventListener('click', (e) => { if (e.target === modal) { this.hide(modal); resolve(false); } });
+      
+      const escHandler = (e) => {
+        if (e.key === 'Escape') { this.hide(modal); document.removeEventListener('keydown', escHandler); resolve(false); }
+      };
+      document.addEventListener('keydown', escHandler);
+    });
+  },
+  
+  hide(modal) {
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    setTimeout(() => modal.remove(), 300);
+  }
+};
+
+// ========================================
 // LOGIN MODAL
 // ========================================
 function renderLoginModal() {
@@ -317,7 +443,7 @@ function renderLoginModal() {
                 <input type="checkbox" id="loginRemember" />
                 <span>Ingat saya</span>
               </label>
-              <a href="#" class="login-forgot" onclick="alert('Hubungi administrator untuk reset password.'); return false;">Lupa password?</a>
+              <a href="#" class="login-forgot" onclick="Notification.info('Hubungi administrator untuk reset password.', { duration: 3000 }); return false;">Lupa password ?</a>
             </div>
 
             <!-- Submit -->
@@ -552,7 +678,9 @@ function showLoginSuccess() {
 function showSettingsModal() {
   // 🔒 Proteksi: Hanya Admin
   if (!checkAdminAccess()) {
-    alert('⛔ Akses Ditolak!\n\nFitur Pengaturan hanya dapat diakses oleh Administrator.');
+    Notification.error('Fitur Pengaturan hanya dapat diakses oleh Administrator.', {
+  duration: 4000
+});
     return;
   }
 
@@ -1130,11 +1258,16 @@ function saveSettings() {
   }
 }
 
-function resetSettings() {
-  if (!confirm('⚠️ Kembalikan semua pengaturan ke nilai default?\n\nPerubahan yang belum disimpan akan hilang.')) return;
-  
-  localStorage.removeItem('grossmart_settings');
-  settingsState.data = {
+async function resetSettings() {
+  if (!await CustomConfirm.show('Kembalikan semua pengaturan ke nilai default? Perubahan yang belum disimpan akan hilang.', {
+    type: 'warning',
+    confirmText: 'Ya, Reset',
+    cancelText: 'Batal',
+    confirmClass: 'btn-primary'
+    })) return;
+
+    localStorage.removeItem('grossmart_settings');
+    settingsState.data = {
     storeName: 'GrossMart',
     storeAddress: 'Jl. Merdeka No. 123, Jakarta Pusat',
     storePhone: '021-12345678',
@@ -1220,10 +1353,21 @@ function importData() {
   input.click();
 }
 
-function resetAllData() {
-  if (!confirm('⚠️ PERINGATAN!\n\nSemua data akan dihapus permanen:\n• Data produk\n• Data transaksi\n• Data kas\n• Pengaturan\n\nTindakan ini tidak dapat dibatalkan!')) return;
-  if (!confirm('🔴 Yakin? Ketik OK untuk melanjutkan.')) return;
-  
+async function resetAllData() {
+  if (!await CustomConfirm.show('PERINGATAN! Semua data akan dihapus permanen:\n• Data produk\n• Data transaksi\n• Data kas\n• Pengaturan\n\nTindakan ini tidak dapat dibatalkan!', {
+    type: 'danger',
+    confirmText: 'Hapus Semua',
+    cancelText: 'Batal',
+    confirmClass: 'btn-danger'
+  })) return;
+
+  if (!await CustomConfirm.show('Yakin 100% ingin melanjutkan? Semua data akan hilang!', {
+    type: 'danger',
+    confirmText: 'Ya, Hapus!',
+    cancelText: 'Batal',
+    confirmClass: 'btn-danger'
+  })) return;
+
   localStorage.clear();
   sessionStorage.clear();
   location.reload();
@@ -1676,8 +1820,13 @@ function updatePasswordStrength(password) {
 // ========================================
 // USER MENU (Avatar di Header)
 // ========================================
-function handleLogout() {
-  if (!confirm('Yakin ingin keluar dari akun?')) return;
+async function handleLogout() {
+  if (!await CustomConfirm.show('Yakin ingin keluar dari akun?', {
+    type: 'question',
+    confirmText: 'Keluar',
+    cancelText: 'Batal',
+    confirmClass: 'btn-danger'
+  })) return;
 
   authState.isLoggedIn = false;
   authState.user = null;
@@ -1686,11 +1835,9 @@ function handleLogout() {
 
   closeUserDropdown();
   renderUserMenu();
-  renderBottomNav(); // ✅ Refresh bottom nav
-  switchTab('penjualan'); // ✅ Reset ke tab penjualan
-  showCartFeedback('👋 Anda telah keluar');
-
-  // ✅ Panggil kembali halaman login wajib setelah logout
+  renderBottomNav();
+  switchTab('penjualan');
+  Notification.info('Anda telah berhasil keluar', { duration: 2500 });
   showLoginScreen();
 }
 
@@ -1960,7 +2107,7 @@ function setupMasterDataListeners() {
     });
   });
 
-  // Delete buttons
+    // Delete buttons
   document.querySelectorAll('[data-delete-id]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = parseInt(btn.dataset.deleteId);
@@ -1987,7 +2134,7 @@ function refreshMasterData() {
 function openMasterDataModal(editId = null) {
   // 🔒 Proteksi ganda
   if (!checkAdminAccess()) {
-    alert('⛔ Akses Ditolak! Hanya admin yang dapat mengelola data barang.');
+    Notification.error('Hanya admin yang dapat mengelola data barang!', { duration: 3000 });
     return;
   }
 
@@ -2067,7 +2214,7 @@ function openMasterDataModal(editId = null) {
   document.getElementById('mdModalOverlay').addEventListener('click', (e) => {
     if (e.target.id === 'mdModalOverlay') closeMasterDataModal();
   });
-  document.getElementById('mdSaveBtn').addEventListener('click', saveMasterData);
+    document.getElementById('mdSaveBtn').addEventListener('click', () => saveMasterData());
 
   // ESC to close
   const escHandler = (e) => {
@@ -2091,7 +2238,7 @@ function closeMasterDataModal() {
   masterDataState.editingId = null;
 }
 
-function saveMasterData() {
+async function saveMasterData() {
   const kode = document.getElementById('mdKode').value.trim();
   const nama = document.getElementById('mdNama').value.trim();
   const kategori = document.getElementById('mdKategori').value;
@@ -2102,21 +2249,26 @@ function saveMasterData() {
 
   // Validasi
   if (!kode || !nama || !kategori) {
-    alert('⚠️ Kode, Nama, dan Kategori wajib diisi!');
+    Notification.warning('Kode, Nama, dan Kategori wajib diisi !', {
+  duration: 3000
+});
     return;
   }
-  if (hargaBeli <= 0 || hargaJual <= 0) {
-    alert('⚠️ Harga beli dan harga jual harus lebih dari 0!');
+    if (hargaBeli <= 0 || hargaJual <= 0) {
+    Notification.warning('Harga beli dan harga jual harus lebih dari 0!', { duration: 3000 });
     return;
   }
   if (hargaJual < hargaBeli) {
-    if (!confirm('⚠️ Harga jual lebih kecil dari harga beli. Lanjutkan?')) return;
+    if (!await CustomConfirm.show('Harga jual lebih kecil dari harga beli. Lanjutkan?', {
+      type: 'warning',
+      confirmText: 'Lanjutkan',
+      cancelText: 'Batal'
+    })) return;
   }
-
   // Cek duplikasi kode (kecuali saat edit barang yang sama)
   const duplikat = mockProducts.find(p => p.kode.toLowerCase() === kode.toLowerCase() && p.id !== masterDataState.editingId);
   if (duplikat) {
-    alert(`⚠️ Kode barang "${kode}" sudah digunakan oleh produk lain!`);
+    Notification.warning(`Kode barang "${kode}" sudah digunakan oleh produk lain!`, { duration: 3000 });
     return;
   }
 
@@ -2147,17 +2299,19 @@ function saveMasterData() {
   refreshMasterData();
 }
 
-function deleteMasterData(id) {
+async function deleteMasterData(id) {
   const product = mockProducts.find(p => p.id === id);
   if (!product) return;
 
-  if (!confirm(`🗑️ Hapus barang "${product.nama}"?\n\nData yang dihapus tidak dapat dikembalikan.`)) return;
-  
-  // Konfirmasi kedua untuk keamanan
-  if (!confirm(`⚠️ Yakin ingin menghapus?\nKode: ${product.kode}\nNama: ${product.nama}`)) return;
+  if (!await CustomConfirm.show(`Hapus barang "${product.nama}"?\nData yang dihapus tidak dapat dikembalikan.`, {
+    type: 'danger',
+    confirmText: 'Hapus',
+    cancelText: 'Batal',
+    confirmClass: 'btn-danger'
+  })) return;
 
   mockProducts = mockProducts.filter(p => p.id !== id);
-  showCartFeedback(`🗑️ Barang "${product.nama}" telah dihapus`);
+  Notification.success(`Barang "${product.nama}" telah dihapus`, { duration: 2500 });
   refreshMasterData();
 }
 
@@ -2378,12 +2532,18 @@ function closePOS() {
 
 function setupPOSEventListeners() {
   document.getElementById('posBackBtn')?.addEventListener('click', closePOS);
-  document.getElementById('posClearCartBtn')?.addEventListener('click', () => {
-    if (confirm('Kosongkan keranjang?')) {
+    document.getElementById('posClearCartBtn')?.addEventListener('click', async () => {
+    if (await CustomConfirm.show('Kosongkan keranjang belanja?', {
+      type: 'warning',
+      confirmText: 'Kosongkan',
+      cancelText: 'Batal',
+      confirmClass: 'btn-danger'
+    })) {
       posState.cart = [];
       updateCartPanel();
     }
   });
+
   document.getElementById('posDate')?.addEventListener('change', (e) => {
     posState.transactionDate = e.target.value;
     // Jika user manual ubah tanggal, hentikan auto-update sementara
@@ -2510,7 +2670,7 @@ function saveTransaction() {
     mockKasHarian.push({ id: kasId, tanggal: tanggalFormatted, bukti: '', uraian: `PENJUALAN ${item.nama}`, inJml: item.jumlah, inHrg: item.harga, inTot: item.total, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: lastSaldo + item.total });
   });
   
-  alert(`✅ ${posState.cart.length} item berhasil disimpan!\nTotal: ${formatRp(calculateCartTotal())}`);
+    Notification.success(`${posState.cart.length} item berhasil disimpan! Total: ${formatRp(calculateCartTotal())}`, { duration: 4000 });
   if (activeTab === 'penjualan' || activeTab === 'kas') switchTab(activeTab);
   closePOS();
 }
@@ -2961,7 +3121,7 @@ function initApp() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   const notifBtn = document.getElementById('notifBtn');
-  if (notifBtn) notifBtn.addEventListener('click', () => alert('🔔 Tidak ada notifikasi baru'));
+    if (notifBtn) notifBtn.addEventListener('click', () => Notification.info('Tidak ada notifikasi baru', { duration: 2500 }));
 
   document.addEventListener('click', (e) => {
     if (e.target.closest('#btnTambahTransaksi')) openPOS();
