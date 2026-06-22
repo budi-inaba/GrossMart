@@ -2184,10 +2184,41 @@ function openMasterDataModal(editId = null) {
                 <label>Stok <span class="required">*</span></label>
                 <input type="number" id="mdStok" value="${product?.stok ?? ''}" placeholder="0" min="0" required />
               </div>
-              <div class="md-form-group">
-                <label>URL Gambar</label>
-                <input type="text" id="mdImage" value="${product?.image || ''}" placeholder="asset/nama-file.png" />
+                <div class="md-form-group full">
+                  <label>Gambar Produk</label>
+                 <div class="image-upload-container">
+                   <div class="image-preview-area" id="imagePreviewArea">
+                     ${product?.image ? `
+                      <img src="${product.image}" alt="Preview" class="preview-image" />
+                      <button type="button" class="remove-image-btn" id="removeImageBtn">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    ` : `
+                      <div class="upload-placeholder">
+                        <i data-lucide="image-plus" class="w-12 h-12"></i>
+                        <p>Belum ada gambar</p>
+                      </div>
+                    `}
+                  </div>
+                  <div class="image-upload-options">
+                    <label class="upload-btn" for="mdImageUpload">
+                      <i data-lucide="upload" class="w-4 h-4"></i>
+                      <span>Upload Gambar</span>
+                      <input type="file" id="mdImageUpload" accept="image/*" style="display: none;" />
+                    </label>
+                    <button type="button" class="url-toggle-btn" id="urlToggleBtn">
+                      <i data-lucide="link" class="w-4 h-4"></i>
+                      <span>Gunakan URL</span>
+                    </button>
+                  </div>
+                  <div class="image-url-input" id="imageUrlInput" style="display: none;">
+                    <input type="text" id="mdImageUrl" value="${product?.image || ''}" placeholder="https://example.com/gambar.jpg" />
+                    <button type="button" class="apply-url-btn" id="applyUrlBtn">Terapkan</button>
+                  </div>
+                  <small class="upload-hint">Format: JPG, PNG, WebP (Maks. 2MB)</small>
+                </div>
               </div>
+
             </div>
           </form>
         </div>
@@ -2227,6 +2258,144 @@ function openMasterDataModal(editId = null) {
 
   // Focus ke field pertama
   setTimeout(() => document.getElementById('mdKode')?.focus(), 200);
+  // Image upload handlers
+  setupImageUploadHandlers();
+}
+
+function setupImageUploadHandlers() {
+  const fileInput = document.getElementById('mdImageUpload');
+  const previewArea = document.getElementById('imagePreviewArea');
+  const removeBtn = document.getElementById('removeImageBtn');
+  const urlToggleBtn = document.getElementById('urlToggleBtn');
+  const imageUrlInput = document.getElementById('imageUrlInput');
+  const applyUrlBtn = document.getElementById('applyUrlBtn');
+  const urlInput = document.getElementById('mdImageUrl');
+  
+  let uploadedFile = null;
+  
+  // Handle file upload
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Validasi file
+      if (!file.type.startsWith('image/')) {
+        Notification.warning('File harus berupa gambar!', { duration: 3000 });
+        return;
+      }
+      
+      if (file.size > 2 * 1024 * 1024) {
+        Notification.warning('Ukuran gambar maksimal 2MB!', { duration: 3000 });
+        return;
+      }
+      
+      uploadedFile = file;
+      
+      // Preview gambar
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewArea.innerHTML = `
+          <img src="${e.target.result}" alt="Preview" class="preview-image" />
+          <button type="button" class="remove-image-btn" id="removeImageBtn">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        // Re-attach remove button event
+        document.getElementById('removeImageBtn')?.addEventListener('click', removeImage);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  
+  // Handle remove image
+  function removeImage() {
+    uploadedFile = null;
+    previewArea.innerHTML = `
+      <div class="upload-placeholder">
+        <i data-lucide="image-plus" class="w-12 h-12"></i>
+        <p>Belum ada gambar</p>
+      </div>
+    `;
+    if (fileInput) fileInput.value = '';
+    if (urlInput) urlInput.value = '';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+  
+  if (removeBtn) {
+    removeBtn.addEventListener('click', removeImage);
+  }
+  
+  // Toggle URL input
+  if (urlToggleBtn) {
+    urlToggleBtn.addEventListener('click', () => {
+      if (imageUrlInput.style.display === 'none') {
+        imageUrlInput.style.display = 'flex';
+        urlToggleBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload File</span>';
+        if (urlInput) urlInput.focus();
+      } else {
+        imageUrlInput.style.display = 'none';
+        urlToggleBtn.innerHTML = '<i data-lucide="link" class="w-4 h-4"></i><span>Gunakan URL</span>';
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  }
+  
+  // Apply URL
+  if (applyUrlBtn) {
+    applyUrlBtn.addEventListener('click', () => {
+      const url = urlInput?.value?.trim();
+      if (!url) {
+        Notification.warning('Masukkan URL gambar!', { duration: 3000 });
+        return;
+      }
+      
+      // Validasi URL
+      if (!url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
+        Notification.warning('URL harus berakhiran .jpg, .png, .gif, .webp, atau .svg', { duration: 3000 });
+        return;
+      }
+      
+      previewArea.innerHTML = `
+        <img src="${url}" alt="Preview" class="preview-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/><text fill=%22%23999%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22>Gambar Tidak Valid</text></svg>'" />
+        <button type="button" class="remove-image-btn" id="removeImageBtn">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      `;
+      
+      imageUrlInput.style.display = 'none';
+      urlToggleBtn.innerHTML = '<i data-lucide="link" class="w-4 h-4"></i><span>Gunakan URL</span>';
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      // Re-attach remove button event
+      document.getElementById('removeImageBtn')?.addEventListener('click', removeImage);
+      
+      Notification.success('URL gambar berhasil diterapkan', { duration: 2000 });
+    });
+  }
+  
+  // Store uploaded file in global scope for save function
+  window.mdUploadedImage = uploadedFile;
+  window.mdGetImageData = function() {
+    const urlInput = document.getElementById('mdImageUrl');
+    const previewImg = previewArea.querySelector('.preview-image');
+    
+    if (uploadedFile) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(uploadedFile);
+      });
+    } else if (urlInput && urlInput.value.trim()) {
+      return Promise.resolve(urlInput.value.trim());
+    } else if (previewImg && previewImg.src) {
+      return Promise.resolve(previewImg.src);
+    }
+    return Promise.resolve('');
+  };
 }
 
 function closeMasterDataModal() {
@@ -2245,13 +2414,17 @@ async function saveMasterData() {
   const hargaBeli = parseInt(document.getElementById('mdHargaBeli').value) || 0;
   const hargaJual = parseInt(document.getElementById('mdHargaJual').value) || 0;
   const stok = parseInt(document.getElementById('mdStok').value) || 0;
-  const image = document.getElementById('mdImage').value.trim();
+  // Get image data (async untuk handle file upload)
+  let image = '';
+  if (window.mdGetImageData) {
+    image = await window.mdGetImageData();
+  }
 
   // Validasi
   if (!kode || !nama || !kategori) {
     Notification.warning('Kode, Nama, dan Kategori wajib diisi !', {
-  duration: 3000
-});
+   duration: 3000
+   });
     return;
   }
     if (hargaBeli <= 0 || hargaJual <= 0) {
