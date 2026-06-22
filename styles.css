@@ -701,24 +701,7 @@ tbody tr:hover {
   background: rgba(255, 255, 255, 0.06);
   border-radius: 50%;
 }
-.login-logo-wrapper {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 16px;
-  background: white;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  position: relative;
-  z-index: 2;
-}
-.login-logo-wrapper img {
-  width: 85%;
-  height: 85%;
-  object-fit: contain;
-}
+
 .login-title {
   font-size: 1.5rem;
   font-weight: 800;
