@@ -480,6 +480,446 @@ function showLoginSuccess() {
 }
 
 // ========================================
+// PROFILE MODAL
+// ========================================
+function showProfileModal() {
+  if (!authState.isLoggedIn || !authState.user) {
+    openLoginModal();
+    return;
+  }
+
+  closeUserDropdown();
+
+  const user = authState.user;
+  const initial = user.nama.charAt(0).toUpperCase();
+  const joinDate = new Date().toLocaleDateString('id-ID', { 
+    day: 'numeric', month: 'long', year: 'numeric' 
+  });
+
+  const profileHtml = `
+    <div class="profile-modal-overlay active" id="profileModalOverlay">
+      <div class="profile-modal">
+        
+        <!-- Header dengan Cover & Avatar -->
+        <div class="profile-header">
+          <div class="profile-cover"></div>
+          <button class="profile-close-btn" id="profileCloseBtn" aria-label="Tutup">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          
+          <div class="profile-avatar-section">
+            <div class="profile-avatar-large">
+              <div class="profile-avatar-circle-large">${initial}</div>
+              <div class="profile-avatar-badge">
+                <i data-lucide="${user.role === 'Admin' ? 'shield-check' : user.role === 'Kasir' ? 'shopping-bag' : 'eye'}"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="profile-body">
+          
+          <!-- Info Utama -->
+          <div class="profile-main-info">
+            <h2 class="profile-name">${user.nama}</h2>
+            <div class="profile-role-badge">
+              <i data-lucide="${user.role === 'Admin' ? 'shield-check' : user.role === 'Kasir' ? 'shopping-bag' : 'eye'}" class="w-3.5 h-3.5"></i>
+              ${user.role}
+            </div>
+            <p class="profile-username">@${user.username}</p>
+            <p class="profile-join-date">
+              <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+              Bergabung sejak ${joinDate}
+            </p>
+          </div>
+
+          <!-- Tab Navigation -->
+          <div class="profile-tabs">
+            <button class="profile-tab active" data-tab="info">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>Informasi</span>
+            </button>
+            <button class="profile-tab" data-tab="security">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span>Keamanan</span>
+            </button>
+            <button class="profile-tab" data-tab="preferences">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span>Preferensi</span>
+            </button>
+          </div>
+
+          <!-- Tab Content: Informasi -->
+          <div class="profile-tab-content active" id="profileTabInfo">
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="info" class="w-4 h-4"></i>
+                Informasi Akun
+              </h3>
+              <div class="profile-info-grid">
+                <div class="profile-info-item">
+                  <label>Nama Lengkap</label>
+                  <div class="profile-info-value">${user.nama}</div>
+                </div>
+                <div class="profile-info-item">
+                  <label>Username</label>
+                  <div class="profile-info-value">${user.username}</div>
+                </div>
+                <div class="profile-info-item">
+                  <label>Role / Peran</label>
+                  <div class="profile-info-value">
+                    <span class="profile-role-tag ${user.role.toLowerCase()}">${user.role}</span>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <label>Status Akun</label>
+                  <div class="profile-info-value">
+                    <span class="profile-status-badge active">
+                      <span class="status-dot"></span>
+                      Aktif
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+                Hak Akses
+              </h3>
+              <div class="profile-permissions">
+                ${getPermissionList(user.role).map(perm => `
+                  <div class="permission-item">
+                    <div class="permission-icon ${perm.granted ? 'granted' : 'denied'}">
+                      <i data-lucide="${perm.granted ? 'check-circle' : 'x-circle'}" class="w-4 h-4"></i>
+                    </div>
+                    <div class="permission-info">
+                      <div class="permission-name">${perm.name}</div>
+                      <div class="permission-desc">${perm.description}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content: Keamanan -->
+          <div class="profile-tab-content" id="profileTabSecurity">
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="key" class="w-4 h-4"></i>
+                Ubah Password
+              </h3>
+              <form id="changePasswordForm" class="profile-form">
+                <div class="profile-form-group">
+                  <label>Password Lama <span class="required">*</span></label>
+                  <input type="password" id="oldPassword" placeholder="Masukkan password lama" required />
+                </div>
+                <div class="profile-form-group">
+                  <label>Password Baru <span class="required">*</span></label>
+                  <input type="password" id="newPassword" placeholder="Minimal 8 karakter" required />
+                  <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                <div class="profile-form-group">
+                  <label>Konfirmasi Password Baru <span class="required">*</span></label>
+                  <input type="password" id="confirmPassword" placeholder="Ulangi password baru" required />
+                </div>
+                <button type="submit" class="profile-btn profile-btn-primary">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  Update Password
+                </button>
+              </form>
+            </div>
+
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="activity" class="w-4 h-4"></i>
+                Aktivitas Login Terakhir
+              </h3>
+              <div class="profile-activity-list">
+                <div class="activity-item">
+                  <div class="activity-icon success">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                  </div>
+                  <div class="activity-info">
+                    <div class="activity-title">Login berhasil</div>
+                    <div class="activity-meta">Hari ini, ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} • Browser saat ini</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon success">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                  </div>
+                  <div class="activity-info">
+                    <div class="activity-title">Login berhasil</div>
+                    <div class="activity-meta">Kemarin, 09:15 • Chrome di Windows</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content: Preferensi -->
+          <div class="profile-tab-content" id="profileTabPreferences">
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="bell" class="w-4 h-4"></i>
+                Notifikasi
+              </h3>
+              <div class="profile-preference-list">
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <div class="preference-name">Notifikasi Stok Rendah</div>
+                    <div class="preference-desc">Terima peringatan saat stok barang menipis</div>
+                  </div>
+                  <label class="preference-toggle">
+                    <input type="checkbox" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <div class="preference-name">Notifikasi Transaksi</div>
+                    <div class="preference-desc">Terima notifikasi saat ada transaksi baru</div>
+                  </div>
+                  <label class="preference-toggle">
+                    <input type="checkbox" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <div class="preference-name">Laporan Harian</div>
+                    <div class="preference-desc">Kirim ringkasan laporan setiap akhir hari</div>
+                  </div>
+                  <label class="preference-toggle">
+                    <input type="checkbox" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-section">
+              <h3 class="profile-section-title">
+                <i data-lucide="palette" class="w-4 h-4"></i>
+                Tampilan
+              </h3>
+              <div class="profile-preference-list">
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <div class="preference-name">Mode Gelap</div>
+                    <div class="preference-desc">Aktifkan tema gelap untuk kenyamanan mata</div>
+                  </div>
+                  <label class="preference-toggle">
+                    <input type="checkbox" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <div class="preference-name">Animasi</div>
+                    <div class="preference-desc">Aktifkan efek animasi pada antarmuka</div>
+                  </div>
+                  <label class="preference-toggle">
+                    <input type="checkbox" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="profile-footer">
+          <button class="profile-btn profile-btn-danger" id="profileLogoutBtn">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            Keluar dari Akun
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = profileHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Event Listeners
+  setupProfileEventListeners();
+}
+
+function getPermissionList(role) {
+  const permissions = {
+    Admin: [
+      { name: 'Kelola Master Data', description: 'Tambah, edit, hapus data barang', granted: true },
+      { name: 'Lihat Laporan Keuangan', description: 'Akses laporan penjualan, kas, dan rekap', granted: true },
+      { name: 'Kelola Transaksi', description: 'Buat dan kelola transaksi penjualan', granted: true },
+      { name: 'Kelola Pengguna', description: 'Tambah dan kelola akun pengguna', granted: true },
+      { name: 'Pengaturan Sistem', description: 'Akses konfigurasi aplikasi', granted: true },
+    ],
+    Kasir: [
+      { name: 'Kelola Master Data', description: 'Tambah, edit, hapus data barang', granted: false },
+      { name: 'Lihat Laporan Keuangan', description: 'Akses laporan penjualan, kas, dan rekap', granted: true },
+      { name: 'Kelola Transaksi', description: 'Buat dan kelola transaksi penjualan', granted: true },
+      { name: 'Kelola Pengguna', description: 'Tambah dan kelola akun pengguna', granted: false },
+      { name: 'Pengaturan Sistem', description: 'Akses konfigurasi aplikasi', granted: false },
+    ],
+    Viewer: [
+      { name: 'Kelola Master Data', description: 'Tambah, edit, hapus data barang', granted: false },
+      { name: 'Lihat Laporan Keuangan', description: 'Akses laporan penjualan, kas, dan rekap', granted: true },
+      { name: 'Kelola Transaksi', description: 'Buat dan kelola transaksi penjualan', granted: false },
+      { name: 'Kelola Pengguna', description: 'Tambah dan kelola akun pengguna', granted: false },
+      { name: 'Pengaturan Sistem', description: 'Akses konfigurasi aplikasi', granted: false },
+    ]
+  };
+  return permissions[role] || permissions.Viewer;
+}
+
+function setupProfileEventListeners() {
+  // Close button
+  document.getElementById('profileCloseBtn')?.addEventListener('click', closeProfileModal);
+  
+  // Click outside to close
+  document.getElementById('profileModalOverlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'profileModalOverlay') closeProfileModal();
+  });
+
+  // ESC to close
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeProfileModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+
+  // Tab switching
+  document.querySelectorAll('.profile-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.dataset.tab;
+      switchProfileTab(tabId);
+    });
+  });
+
+  // Logout button
+  document.getElementById('profileLogoutBtn')?.addEventListener('click', () => {
+    closeProfileModal();
+    setTimeout(() => handleLogout(), 300);
+  });
+
+  // Password form
+  document.getElementById('changePasswordForm')?.addEventListener('submit', handleChangePassword);
+  
+  // Password strength indicator
+  document.getElementById('newPassword')?.addEventListener('input', (e) => {
+    updatePasswordStrength(e.target.value);
+  });
+}
+
+function switchProfileTab(tabId) {
+  // Update tab buttons
+  document.querySelectorAll('.profile-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.tab === tabId) tab.classList.add('active');
+  });
+
+  // Update tab content
+  document.querySelectorAll('.profile-tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+
+  const contentMap = {
+    'info': 'profileTabInfo',
+    'security': 'profileTabSecurity',
+    'preferences': 'profileTabPreferences'
+  };
+
+  const contentId = contentMap[tabId];
+  if (contentId) {
+    document.getElementById(contentId)?.classList.add('active');
+  }
+}
+
+function closeProfileModal() {
+  const overlay = document.getElementById('profileModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.remove(), 300);
+  }
+}
+
+function handleChangePassword(e) {
+  e.preventDefault();
+  
+  const oldPassword = document.getElementById('oldPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+
+  // Validasi
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    showCartFeedback('⚠️ Semua field wajib diisi');
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    showCartFeedback('⚠️ Password baru minimal 8 karakter');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showCartFeedback('⚠️ Konfirmasi password tidak cocok');
+    return;
+  }
+
+  // Simulasi update password (dalam aplikasi nyata, ini akan memanggil API)
+  showCartFeedback('✅ Password berhasil diubah');
+  
+  // Reset form
+  document.getElementById('changePasswordForm').reset();
+  document.getElementById('passwordStrength').innerHTML = '';
+}
+
+function updatePasswordStrength(password) {
+  const strengthBar = document.getElementById('passwordStrength');
+  if (!strengthBar) return;
+
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+  if (/\d/.test(password)) strength++;
+  if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+  const strengthLevels = [
+    { label: 'Sangat Lemah', color: '#dc2626', width: '25%' },
+    { label: 'Lemah', color: '#f59e0b', width: '50%' },
+    { label: 'Sedang', color: '#eab308', width: '75%' },
+    { label: 'Kuat', color: '#10b981', width: '100%' }
+  ];
+
+  if (password.length === 0) {
+    strengthBar.innerHTML = '';
+    return;
+  }
+
+  const level = strengthLevels[Math.max(0, strength - 1)] || strengthLevels[0];
+  
+  strengthBar.innerHTML = `
+    <div class="password-strength-bar">
+      <div class="password-strength-fill" style="width: ${level.width}; background: ${level.color};"></div>
+    </div>
+    <span class="password-strength-label" style="color: ${level.color};">${level.label}</span>
+  `;
+}
+
+// ========================================
 // USER MENU (Avatar di Header)
 // ========================================
 function handleLogout() {
@@ -518,9 +958,11 @@ function renderUserMenu() {
             <div class="user-dropdown-name">${authState.user.nama}</div>
             <div class="user-dropdown-role">${authState.user.role}</div>
           </div>
-          <button class="user-dropdown-item" onclick="alert('Fitur profil segera hadir!')">
+
+          <button class="user-dropdown-item" onclick="showProfileModal()">
             <i data-lucide="user"></i> Profil Saya
           </button>
+          
           <button class="user-dropdown-item" onclick="alert('Fitur pengaturan segera hadir!')">
             <i data-lucide="settings"></i> Pengaturan
           </button>
