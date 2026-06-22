@@ -4018,3 +4018,235 @@ tbody tr:hover {
     width: 100%;
   }
 }
+
+/* ========================================
+16. CAMERA MODAL STYLES
+======================================== */
+.camera-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.camera-modal {
+  background: #1e293b;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.camera-modal-header {
+  padding: 16px 20px;
+  background: #0f172a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+}
+
+.camera-modal-header h3 {
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.camera-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.camera-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.camera-modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.camera-container {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 300px;
+}
+
+#cameraVideo,
+#cameraCanvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 50vh;
+}
+
+.camera-controls {
+  padding: 20px;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid #334155;
+}
+
+.camera-action-btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.camera-action-btn.cancel {
+  background: #475569;
+  color: white;
+}
+
+.camera-action-btn.cancel:hover {
+  background: #64748b;
+}
+
+.camera-action-btn.capture {
+  background: #0d9488;
+  color: white;
+  padding: 14px 32px;
+  font-size: 1rem;
+}
+
+.camera-action-btn.capture:hover {
+  background: #14b8a6;
+  transform: scale(1.05);
+}
+
+.camera-action-btn.retake {
+  background: #f59e0b;
+  color: white;
+}
+
+.camera-action-btn.retake:hover {
+  background: #fbbf24;
+}
+
+.camera-action-btn.save {
+  background: #10b981;
+  color: white;
+}
+
+.camera-action-btn.save:hover {
+  background: #34d399;
+}
+
+/* Camera button styling */
+.camera-btn {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-color: transparent;
+}
+
+.camera-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: white;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .camera-modal {
+    border-radius: 0;
+    max-height: 100vh;
+  }
+  
+  .camera-controls {
+    flex-wrap: wrap;
+  }
+  
+  .camera-action-btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+  
+  .camera-action-btn.capture {
+    order: -1;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+/* Update upload options for camera button */
+.image-upload-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.upload-btn,
+.url-toggle-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.upload-btn:hover,
+.url-toggle-btn:hover {
+  border-color: #0d9488;
+  color: #0d9488;
+  background: #f0fdfa;
+  transform: translateY(-1px);
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  color: white;
+  border-color: transparent;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: white;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
