@@ -80,17 +80,56 @@ function loadAuthSession() {
   }
 }
 
+// ========================================
+// AUTH STATE (PERBAIKAN)
+// ========================================
+
 function saveAuthSession() {
-  if (authState.isLoggedIn && authState.rememberMe) {
-    localStorage.setItem('grossmart_session', JSON.stringify({
+  if (authState.isLoggedIn && authState.user) {
+    const sessionData = {
       username: authState.user.username,
       loginAt: new Date().toISOString(),
-    }));
+    };
+    
+    // Jika "Ingat saya" dicentang -> simpan di localStorage (persisten meski browser ditutup)
+    // Jika tidak dicentang -> simpan di sessionStorage (tetap login saat refresh, logout jika tab ditutup)
+    if (authState.rememberMe) {
+      localStorage.setItem('grossmart_session', JSON.stringify(sessionData));
+    } else {
+      sessionStorage.setItem('grossmart_session', JSON.stringify(sessionData));
+    }
+  }
+}
+
+function loadAuthSession() {
+  try {
+    // Cek localStorage dulu, jika tidak ada cek sessionStorage
+    const savedLocal = localStorage.getItem('grossmart_session');
+    const savedSession = sessionStorage.getItem('grossmart_session');
+    const saved = savedLocal || savedSession;
+
+    if (saved) {
+      const session = JSON.parse(saved);
+      if (session && session.username) {
+        const user = mockUsers.find(u => u.username === session.username);
+        if (user) {
+          authState.isLoggedIn = true;
+          // Perbaikan: Jangan simpan password di authState.user
+          authState.user = { username: user.username, nama: user.nama, role: user.role };
+          // Set rememberMe true hanya jika sesi berasal dari localStorage
+          authState.rememberMe = !!savedLocal; 
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Gagal memuat sesi:', e);
   }
 }
 
 function clearAuthSession() {
+  // Hapus dari kedua storage saat logout
   localStorage.removeItem('grossmart_session');
+  sessionStorage.removeItem('grossmart_session');
 }
 
 // ========================================
@@ -310,9 +349,8 @@ function handleLoginSubmit(e) {
       authState.user = { username: user.username, nama: user.nama, role: user.role };
       authState.rememberMe = rememberInput.checked;
 
-      if (authState.rememberMe) {
-        saveAuthSession();
-      }
+            // Selalu simpan sesi (otomatis memilih localStorage atau sessionStorage)
+      saveAuthSession();
 
       showLoginSuccess();
 
@@ -1365,8 +1403,11 @@ function renderDecoratorLine() {
 // INIT APP
 // ========================================
 function initApp() {
+  // ✅ PENTING: Load session auth SEBELUM render UI lainnya
+  loadAuthSession();
+
   renderDecoratorLine();
-  renderBottomNav();
+  renderBottomNav(); // Sekarang checkAdminAccess() akan bernilai true jika user adalah Admin
   switchTab('penjualan');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -1377,8 +1418,7 @@ function initApp() {
     if (e.target.closest('#btnTambahTransaksi')) openPOS();
   });
 
-  // ✅ Inisialisasi Auth
-  loadAuthSession();
+  // Render menu user setelah sesi dimuat
   renderUserMenu();
 
   // Tutup dropdown user ketika klik di luar
