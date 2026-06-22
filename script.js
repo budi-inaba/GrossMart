@@ -144,9 +144,25 @@ function renderLoginModal() {
           <button class="login-close-btn" id="loginCloseBtn" aria-label="Tutup">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
-          <div class="login-logo-wrapper">
-            <img src="asset/logo-rptra.png" alt="Logo" />
+
+                    <!-- LOGO DIPERBAIKI: Menggunakan struktur dan efek yang sama dengan header -->
+          <div class="relative group mx-auto mb-5 w-28 h-14">
+            <!-- Efek Ping (Background Blur) -->
+            <div class="absolute inset-0 bg-teal-400 rounded-xl animate-ping opacity-20"></div>
+            
+            <!-- Kotak Logo -->
+            <div class="relative w-full h-full bg-white rounded-xl flex items-center justify-center shadow-lg border border-teal-200 z-10 overflow-hidden">
+              <img src="asset/logo-rptra.png" alt="Logo RPTRA" class="w-full h-full object-contain p-1" />
+            </div>
+
+            <!-- Titik-titik Warna -->
+            <div class="absolute -top-2 left-1/2 -translate-x-1/2 flex space-x-1 z-20">
+              <div class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-sm border border-teal-600"></div>
+              <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse delay-75 shadow-sm border border-teal-600"></div>
+              <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse delay-150 shadow-sm border border-teal-600"></div>
+            </div>
           </div>
+
           <h2 class="login-title">Selamat Datang</h2>
           <p class="login-subtitle">Masuk ke akun GrossMart Anda</p>
         </div>
