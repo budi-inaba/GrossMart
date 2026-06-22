@@ -1567,3 +1567,33 @@ tbody tr:hover {
   .master-search, .master-filter { width: 100%; }
   .master-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ========================================
+9. LOGIN SCREEN MODE (Full-Screen Wajib)
+======================================== */
+.login-overlay {
+  /* Background lebih solid agar aplikasi di belakang tidak terlihat */
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Saat mode login screen, card sedikit lebih besar & fokus */
+.login-overlay.active .login-card {
+  max-width: 440px;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Sembunyikan footer "Demo" di layar pendek agar form tidak terdorong */
+@media (max-height: 700px) {
+  .login-footer {
+    display: none;
+  }
+  .login-header {
+    padding: 24px 28px 28px;
+  }
+  .login-body {
+    padding: 24px 20px 16px;
+    margin-top: -16px;
+  }
+}
