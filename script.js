@@ -2184,11 +2184,12 @@ function openMasterDataModal(editId = null) {
                 <label>Stok <span class="required">*</span></label>
                 <input type="number" id="mdStok" value="${product?.stok ?? ''}" placeholder="0" min="0" required />
               </div>
-                <div class="md-form-group full">
-                  <label>Gambar Produk</label>
-                 <div class="image-upload-container">
-                   <div class="image-preview-area" id="imagePreviewArea">
-                     ${product?.image ? `
+
+                              <div class="md-form-group full">
+                <label>Gambar Produk</label>
+                <div class="image-upload-container">
+                  <div class="image-preview-area" id="imagePreviewArea">
+                    ${product?.image ? `
                       <img src="${product.image}" alt="Preview" class="preview-image" />
                       <button type="button" class="remove-image-btn" id="removeImageBtn">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -2203,9 +2204,13 @@ function openMasterDataModal(editId = null) {
                   <div class="image-upload-options">
                     <label class="upload-btn" for="mdImageUpload">
                       <i data-lucide="upload" class="w-4 h-4"></i>
-                      <span>Upload Gambar</span>
+                      <span>Upload File</span>
                       <input type="file" id="mdImageUpload" accept="image/*" style="display: none;" />
                     </label>
+                    <button type="button" class="upload-btn camera-btn" id="cameraBtn">
+                      <i data-lucide="camera" class="w-4 h-4"></i>
+                      <span>Ambil Foto</span>
+                    </button>
                     <button type="button" class="url-toggle-btn" id="urlToggleBtn">
                       <i data-lucide="link" class="w-4 h-4"></i>
                       <span>Gunakan URL</span>
@@ -2215,7 +2220,7 @@ function openMasterDataModal(editId = null) {
                     <input type="text" id="mdImageUrl" value="${product?.image || ''}" placeholder="https://example.com/gambar.jpg" />
                     <button type="button" class="apply-url-btn" id="applyUrlBtn">Terapkan</button>
                   </div>
-                  <small class="upload-hint">Format: JPG, PNG, WebP (Maks. 2MB)</small>
+                  <small class="upload-hint">Format: JPG, PNG, WebP (Maks. 2MB) • Atau gunakan kamera</small>
                 </div>
               </div>
 
@@ -2260,6 +2265,54 @@ function openMasterDataModal(editId = null) {
   setTimeout(() => document.getElementById('mdKode')?.focus(), 200);
   // Image upload handlers
   setupImageUploadHandlers();
+
+// Camera modal HTML
+  const cameraModalHtml = `
+    <div class="camera-modal-overlay" id="cameraModalOverlay" style="display: none;">
+      <div class="camera-modal">
+        <div class="camera-modal-header">
+          <h3><i data-lucide="camera" class="w-5 h-5"></i> Ambil Foto Produk</h3>
+          <button class="camera-close-btn" id="cameraCloseBtn">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="camera-modal-body">
+          <div class="camera-container">
+            <video id="cameraVideo" autoplay playsinline></video>
+            <canvas id="cameraCanvas" style="display: none;"></canvas>
+          </div>
+          <div class="camera-controls">
+            <button class="camera-action-btn cancel" id="cameraCancelBtn">
+              <i data-lucide="x" class="w-5 h-5"></i>
+              Batal
+            </button>
+            <button class="camera-action-btn capture" id="cameraCaptureBtn">
+              <i data-lucide="camera" class="w-6 h-6"></i>
+              Ambil Foto
+            </button>
+            <button class="camera-action-btn retake" id="cameraRetakeBtn" style="display: none;">
+              <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+              Ulangi
+            </button>
+            <button class="camera-action-btn save" id="cameraSaveBtn" style="display: none;">
+              <i data-lucide="check" class="w-5 h-5"></i>
+              Gunakan Foto
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const cameraWrapper = document.createElement('div');
+  cameraWrapper.innerHTML = cameraModalHtml;
+  document.body.appendChild(cameraWrapper.firstElementChild);
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  
+  // Setup camera handlers
+  setupCameraHandlers();
+
 }
 
 function setupImageUploadHandlers() {
@@ -2396,6 +2449,167 @@ function setupImageUploadHandlers() {
     }
     return Promise.resolve('');
   };
+}
+
+
+// ========================================
+// CAMERA HANDLERS
+// ========================================
+function setupCameraHandlers() {
+  const cameraBtn = document.getElementById('cameraBtn');
+  const cameraModal = document.getElementById('cameraModalOverlay');
+  const cameraCloseBtn = document.getElementById('cameraCloseBtn');
+  const cameraVideo = document.getElementById('cameraVideo');
+  const cameraCanvas = document.getElementById('cameraCanvas');
+  const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
+  const cameraRetakeBtn = document.getElementById('cameraRetakeBtn');
+  const cameraSaveBtn = document.getElementById('cameraSaveBtn');
+  const cameraCancelBtn = document.getElementById('cameraCancelBtn');
+  
+  let stream = null;
+  let capturedImage = null;
+  
+  // Open camera
+  if (cameraBtn) {
+    cameraBtn.addEventListener('click', async () => {
+      try {
+        // Request camera access
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment', // Use back camera on mobile
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }, 
+          audio: false 
+        });
+        
+        cameraVideo.srcObject = stream;
+        cameraModal.style.display = 'flex';
+        
+        // Reset state
+        capturedImage = null;
+        cameraVideo.style.display = 'block';
+        cameraCanvas.style.display = 'none';
+        cameraCaptureBtn.style.display = 'flex';
+        cameraRetakeBtn.style.display = 'none';
+        cameraSaveBtn.style.display = 'none';
+        
+      } catch (err) {
+        console.error('Camera error:', err);
+        Notification.error('Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan.', { 
+          duration: 5000 
+        });
+      }
+    });
+  }
+  
+  // Close camera
+  function closeCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+    cameraModal.style.display = 'none';
+    capturedImage = null;
+  }
+  
+  if (cameraCloseBtn) cameraCloseBtn.addEventListener('click', closeCamera);
+  if (cameraCancelBtn) cameraCancelBtn.addEventListener('click', closeCamera);
+  
+  // Capture image
+  if (cameraCaptureBtn) {
+    cameraCaptureBtn.addEventListener('click', () => {
+      if (!stream) return;
+      
+      // Set canvas size to match video
+      cameraCanvas.width = cameraVideo.videoWidth;
+      cameraCanvas.height = cameraVideo.videoHeight;
+      
+      // Draw video frame to canvas
+      const ctx = cameraCanvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0);
+      
+      // Convert to base64
+      capturedImage = cameraCanvas.toDataURL('image/jpeg', 0.85);
+      
+      // Show captured image
+      cameraVideo.style.display = 'none';
+      cameraCanvas.style.display = 'block';
+      cameraCaptureBtn.style.display = 'none';
+      cameraRetakeBtn.style.display = 'flex';
+      cameraSaveBtn.style.display = 'flex';
+    });
+  }
+  
+  // Retake
+  if (cameraRetakeBtn) {
+    cameraRetakeBtn.addEventListener('click', () => {
+      capturedImage = null;
+      cameraVideo.style.display = 'block';
+      cameraCanvas.style.display = 'none';
+      cameraCaptureBtn.style.display = 'flex';
+      cameraRetakeBtn.style.display = 'none';
+      cameraSaveBtn.style.display = 'none';
+    });
+  }
+  
+  // Save captured image
+  if (cameraSaveBtn) {
+    cameraSaveBtn.addEventListener('click', () => {
+      if (!capturedImage) return;
+      
+      // Update preview
+      const previewArea = document.getElementById('imagePreviewArea');
+      previewArea.innerHTML = `
+        <img src="${capturedImage}" alt="Preview" class="preview-image" />
+        <button type="button" class="remove-image-btn" id="removeImageBtn">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      `;
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      // Re-attach remove button event
+      document.getElementById('removeImageBtn')?.addEventListener('click', () => {
+        const fileInput = document.getElementById('mdImageUpload');
+        const urlInput = document.getElementById('mdImageUrl');
+        const newPreviewArea = document.getElementById('imagePreviewArea');
+        
+        newPreviewArea.innerHTML = `
+          <div class="upload-placeholder">
+            <i data-lucide="image-plus" class="w-12 h-12"></i>
+            <p>Belum ada gambar</p>
+          </div>
+        `;
+        
+        if (fileInput) fileInput.value = '';
+        if (urlInput) urlInput.value = '';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      });
+      
+      // Store captured image
+      window.mdUploadedImage = capturedImage;
+      
+      // Close camera
+      closeCamera();
+      
+      Notification.success('Foto berhasil diambil!', { duration: 2000 });
+    });
+  }
+  
+  // Close on overlay click
+  if (cameraModal) {
+    cameraModal.addEventListener('click', (e) => {
+      if (e.target === cameraModal) closeCamera();
+    });
+  }
+  
+  // ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && cameraModal.style.display === 'flex') {
+      closeCamera();
+    }
+  });
 }
 
 function closeMasterDataModal() {
