@@ -45,6 +45,37 @@ const mockRekap = [
 ];
 
 // ========================================
+// DASHBOARD DATA
+// ========================================
+const dashboardData = {
+  penjualanHariIni: 425000,
+  transaksiHariIni: 12,
+  stokRendah: 3,
+  keuntunganBulanIni: 54500,
+  penjualanMingguan: [
+    { hari: 'Sen', jumlah: 320000 },
+    { hari: 'Sel', jumlah: 450000 },
+    { hari: 'Rab', jumlah: 280000 },
+    { hari: 'Kam', jumlah: 510000 },
+    { hari: 'Jum', jumlah: 390000 },
+    { hari: 'Sab', jumlah: 620000 },
+    { hari: 'Min', jumlah: 425000 },
+  ],
+  barangStokRendah: [
+    { nama: 'Nasi Uduk', kode: 'NU', stok: 5, minStok: 10 },
+    { nama: 'Aqua Gelas', kode: 'AG', stok: 8, minStok: 20 },
+    { nama: 'Frost Bite Crunchy', kode: 'FB-LAVA', stok: 3, minStok: 10 },
+  ],
+  transaksiTerakhir: [
+    { waktu: '09:15', barang: 'Frost Bite Chocolate Vanilla', jumlah: 3, total: 15000 },
+    { waktu: '09:32', barang: 'Aqua Botol 600ml', jumlah: 2, total: 6000 },
+    { waktu: '10:05', barang: 'Nasi Uduk', jumlah: 1, total: 7000 },
+    { waktu: '10:22', barang: 'Frost Bite Boba Milk Tea', jumlah: 5, total: 25000 },
+    { waktu: '11:45', barang: 'Aqua Gelas', jumlah: 10, total: 5000 },
+  ]
+};
+
+// ========================================
 // AUTH STATE
 // ========================================
 let authState = {
@@ -418,6 +449,7 @@ function handleLoginSubmit(e) {
         closeLoginModal();
         renderUserMenu();
         renderBottomNav(); // ✅ Refresh bottom nav untuk tampilkan/sembunyikan tab Master Data
+        switchTab('dashboard'); // ✅ Langsung ke dashboard setelah login
         showCartFeedback(`👋 Halo, ${user.nama}!`);
       }, 1200);
     } else {
@@ -1297,6 +1329,7 @@ const formatRp = (angka) => {
 let activeTab = 'penjualan';
 function getTabs() {
   const baseTabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
     { id: 'penjualan', label: 'Penjualan', icon: 'shopping-cart' },
     { id: 'kas', label: 'Kas Harian', icon: 'wallet' },
     { id: 'stok', label: 'Kartu Stok', icon: 'package' },
@@ -1309,6 +1342,259 @@ function getTabs() {
   }
   
   return baseTabs;
+}
+
+// ========================================
+// DASHBOARD
+// ========================================
+function renderTabDashboard() {
+  const now = new Date();
+  const tanggalHariIni = now.toLocaleDateString('id-ID', { 
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+  });
+  const jamSekarang = now.toLocaleTimeString('id-ID', { 
+    hour: '2-digit', minute: '2-digit' 
+  });
+  
+  const userName = authState.isLoggedIn ? authState.user.nama : 'User';
+  const userRole = authState.isLoggedIn ? authState.user.role : '';
+  const greeting = getGreeting();
+  
+  // Hitung max untuk chart scaling
+  const maxPenjualan = Math.max(...dashboardData.penjualanMingguan.map(d => d.jumlah));
+  
+  // Hitung total penjualan minggu ini
+  const totalMingguan = dashboardData.penjualanMingguan.reduce((sum, d) => sum + d.jumlah, 0);
+  
+  return `
+    <div class="dashboard-container animate-tab">
+      
+      <!-- Welcome Banner -->
+      <div class="dashboard-welcome">
+        <div class="welcome-content">
+          <div class="welcome-text">
+            <p class="welcome-greeting">${greeting}</p>
+            <h1 class="welcome-name">${userName} <span class="welcome-role">${userRole}</span></h1>
+            <p class="welcome-date">
+              <i data-lucide="calendar" class="w-4 h-4 inline-block mr-1"></i>
+              ${tanggalHariIni} &nbsp;•&nbsp; 
+              <i data-lucide="clock" class="w-4 h-4 inline-block mr-1"></i>
+              ${jamSekarang} WIB
+            </p>
+          </div>
+          <div class="welcome-illustration">
+            <div class="welcome-icon-box">
+              <i data-lucide="store" class="w-12 h-12"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="dashboard-kpi-grid">
+        <div class="kpi-card kpi-penjualan">
+          <div class="kpi-icon">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Penjualan Hari Ini</span>
+            <span class="kpi-value">${formatRp(dashboardData.penjualanHariIni)}</span>
+            <span class="kpi-change positive">
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i> 12% dari kemarin
+            </span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-transaksi">
+          <div class="kpi-icon">
+            <i data-lucide="shopping-bag"></i>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Total Transaksi</span>
+            <span class="kpi-value">${dashboardData.transaksiHariIni}</span>
+            <span class="kpi-change positive">
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i> 3 lebih dari kemarin
+            </span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-stok">
+          <div class="kpi-icon">
+            <i data-lucide="alert-triangle"></i>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Stok Rendah</span>
+            <span class="kpi-value">${dashboardData.stokRendah} <small>item</small></span>
+            <span class="kpi-change negative">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> Perlu restok segera
+            </span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-keuntungan">
+          <div class="kpi-icon">
+            <i data-lucide="wallet"></i>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">Keuntungan Bulan Ini</span>
+            <span class="kpi-value">${formatRp(dashboardData.keuntunganBulanIni)}</span>
+            <span class="kpi-change positive">
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i> 8% dari bulan lalu
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="dashboard-main-grid">
+        
+        <!-- Left Column: Chart + Quick Actions -->
+        <div class="dashboard-left-col">
+          
+          <!-- Sales Chart -->
+          <div class="dashboard-card chart-card">
+            <div class="card-header">
+              <div>
+                <h3><i data-lucide="bar-chart-3" class="w-5 h-5"></i> Grafik Penjualan</h3>
+                <p class="card-subtitle">7 hari terakhir • Total: ${formatRp(totalMingguan)}</p>
+              </div>
+              <select class="chart-period-select">
+                <option>Minggu Ini</option>
+                <option>Bulan Ini</option>
+                <option>3 Bulan Terakhir</option>
+              </select>
+            </div>
+            <div class="chart-container">
+              ${dashboardData.penjualanMingguan.map((d, i) => {
+                const heightPercent = (d.jumlah / maxPenjualan) * 100;
+                const isToday = i === dashboardData.penjualanMingguan.length - 1;
+                return `
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar-tooltip">${formatRp(d.jumlah)}</div>
+                    <div class="chart-bar ${isToday ? 'chart-bar-today' : ''}" 
+                         style="height: ${heightPercent}%;"
+                         data-value="${d.jumlah}">
+                    </div>
+                    <span class="chart-label ${isToday ? 'chart-label-today' : ''}">${d.hari}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3><i data-lucide="zap" class="w-5 h-5"></i> Aksi Cepat</h3>
+            </div>
+            <div class="quick-actions-grid">
+              <button class="quick-action-btn" onclick="openPOS()">
+                <div class="qa-icon qa-icon-primary">
+                  <i data-lucide="plus-circle"></i>
+                </div>
+                <span>Transaksi Baru</span>
+              </button>
+              <button class="quick-action-btn" onclick="switchTab('penjualan')">
+                <div class="qa-icon qa-icon-success">
+                  <i data-lucide="file-text"></i>
+                </div>
+                <span>Lihat Laporan</span>
+              </button>
+              <button class="quick-action-btn" onclick="switchTab('stok')">
+                <div class="qa-icon qa-icon-warning">
+                  <i data-lucide="package"></i>
+                </div>
+                <span>Cek Stok</span>
+              </button>
+              ${checkAdminAccess() ? `
+              <button class="quick-action-btn" onclick="switchTab('master')">
+                <div class="qa-icon qa-icon-info">
+                  <i data-lucide="database"></i>
+                </div>
+                <span>Master Data</span>
+              </button>
+              ` : `
+              <button class="quick-action-btn" onclick="switchTab('kas')">
+                <div class="qa-icon qa-icon-info">
+                  <i data-lucide="wallet"></i>
+                </div>
+                <span>Kas Harian</span>
+              </button>
+              `}
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Alerts + Recent Transactions -->
+        <div class="dashboard-right-col">
+          
+          <!-- Low Stock Alert -->
+          <div class="dashboard-card alert-card">
+            <div class="card-header">
+              <h3><i data-lucide="alert-triangle" class="w-5 h-5"></i> Peringatan Stok</h3>
+              <button class="card-action-btn" onclick="switchTab('stok')">
+                Lihat Semua <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <div class="stock-alert-list">
+              ${dashboardData.barangStokRendah.map(item => {
+                const stockPercent = (item.stok / item.minStok) * 100;
+                const stockClass = stockPercent <= 30 ? 'critical' : stockPercent <= 60 ? 'warning' : 'low';
+                return `
+                  <div class="stock-alert-item">
+                    <div class="stock-alert-info">
+                      <div class="stock-alert-name">${item.nama}</div>
+                      <div class="stock-alert-code">${item.kode}</div>
+                    </div>
+                    <div class="stock-alert-bar-wrapper">
+                      <div class="stock-alert-bar ${stockClass}" style="width: ${Math.min(stockPercent, 100)}%"></div>
+                    </div>
+                    <div class="stock-alert-value ${stockClass}">
+                      ${item.stok}<small>/${item.minStok}</small>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3><i data-lucide="clock" class="w-5 h-5"></i> Transaksi Terakhir</h3>
+              <button class="card-action-btn" onclick="switchTab('penjualan')">
+                Lihat Semua <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <div class="recent-transactions">
+              ${dashboardData.transaksiTerakhir.map(t => `
+                <div class="transaction-item">
+                  <div class="transaction-time">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                    ${t.waktu}
+                  </div>
+                  <div class="transaction-details">
+                    <div class="transaction-name">${t.barang}</div>
+                    <div class="transaction-qty">${t.jumlah}x item</div>
+                  </div>
+                  <div class="transaction-total">${formatRp(t.total)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 11) return '🌅 Selamat Pagi';
+  if (hour < 15) return '☀️ Selamat Siang';
+  if (hour < 18) return '🌤️ Selamat Sore';
+  return '🌙 Selamat Malam';
 }
 
 function renderTabPenjualan() {
@@ -1400,6 +1686,7 @@ function renderTabRekap() {
 
 function renderContent(tabId) {
   const contentMap = { 
+    'dashboard': renderTabDashboard,
     'penjualan': renderTabPenjualan, 
     'kas': renderTabKasHarian, 
     'stok': renderTabStok, 
@@ -1471,7 +1758,8 @@ function initApp() {
 
   renderDecoratorLine();
   renderBottomNav(); // Sekarang checkAdminAccess() akan bernilai true jika user adalah Admin
-  switchTab('penjualan');
+  // Jika sudah login, tampilkan dashboard. Jika belum, tampilkan penjualan (di balik login screen)
+  switchTab(authState.isLoggedIn ? 'dashboard' : 'penjualan');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   const notifBtn = document.getElementById('notifBtn');
