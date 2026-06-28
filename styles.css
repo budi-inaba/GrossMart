@@ -4983,8 +4983,8 @@ KARTU STOK - PRINT STYLES
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;              /* ✅ Jarak antar elemen lebih rapat & rapi */
-  padding: 16px 0 12px;  /* ✅ Padding atas-bawah seimbang */
+  gap: 1px;              /* ✅ Jarak antar elemen lebih rapat & rapi */
+  padding: 8px 0 10px;  /* ✅ Padding atas-bawah seimbang */
   border-bottom: 2.5px solid #0f766e;
   margin-bottom: 16px;
   text-align: center;
@@ -4992,10 +4992,10 @@ KARTU STOK - PRINT STYLES
 
 /* Logo */
 .stok-print-logo {
-  width: 100px;
-  height: 100px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
-  margin-bottom: 0px;    /* ✅ Jarak logo ke judul */
+  margin-bottom: -2px;    /* ✅ Jarak logo ke judul */
 }
 
 /* Judul "KARTU STOK BARANG" */
