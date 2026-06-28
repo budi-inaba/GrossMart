@@ -5185,13 +5185,13 @@ KARTU STOK - PRINT STYLES
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .stok-print-header-content {
-    gap: 5px;
-    padding: 12px 0 10px;
+    gap: 1px;
+    padding: 8px 0 10px;
   }
 
   .stok-print-logo {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
   }
 
   .stok-print-title {
