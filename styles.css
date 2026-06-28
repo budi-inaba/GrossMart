@@ -4981,31 +4981,59 @@ KARTU STOK - PRINT STYLES
 
 .stok-print-header-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 20px 0;
-  border-bottom: 2px solid #0f766e;
+  gap: 6px;              /* ✅ Jarak antar elemen lebih rapat & rapi */
+  padding: 16px 0 12px;  /* ✅ Padding atas-bawah seimbang */
+  border-bottom: 2.5px solid #0f766e;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
+/* Logo */
 .stok-print-logo {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
+  margin-bottom: 0px;    /* ✅ Jarak logo ke judul */
 }
 
+/* Judul "KARTU STOK BARANG" */
 .stok-print-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #0f766e;
-  margin: 0 0 4px;
-  text-align: center;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.3;
 }
 
+/* Nama Barang (paling menonjol) */
+.stok-print-subtitle.nama-barang {
+   font-size: 1rem;
+  font-weight: 700;
+  color: #000000;       
+  margin: 2px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Kode & Supplier (lebih kecil, warna lebih soft) */
 .stok-print-subtitle {
-  font-size: 0.9rem;
-  color: #475569;
-  margin: 2px 0;
-  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 1px 0;
+  line-height: 1.4;
+}
+
+
+.stok-print-subtitle.nama-barang {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #000000; 
+  text-transform: uppercase;
 }
 
 /* Signature section (hidden by default) */
@@ -5045,7 +5073,6 @@ KARTU STOK - PRINT STYLES
 
 /* Print Media Query */
 @media print {
-  /* Hide elements that shouldn't print */
   .no-print,
   .no-print-header,
   header,
@@ -5055,17 +5082,14 @@ KARTU STOK - PRINT STYLES
     display: none !important;
   }
 
-  /* Show print-specific elements */
-  .stok-print-header,
-  .stok-signature {
-    display: flex !important;
+  .stok-print-header {
+    display: block !important;
   }
 
   .stok-print-header-content {
     display: flex !important;
   }
 
-  /* Reset body for print */
   body {
     background: white !important;
     overflow: visible !important;
@@ -5076,7 +5100,7 @@ KARTU STOK - PRINT STYLES
     max-width: 100% !important;
   }
 
-  /* Table print styles */
+  /* Tabel */
   table {
     width: 100% !important;
     font-size: 10px !important;
@@ -5093,11 +5117,19 @@ KARTU STOK - PRINT STYLES
     color: white !important;
     padding: 6px 8px !important;
     border: 1px solid rgba(255,255,255,0.3) !important;
+    font-size: 9px !important;
+    font-weight: 600 !important;
   }
 
   tbody td {
-    padding: 6px 8px !important;
+    padding: 5px 8px !important;
     border: 1px solid #e2e8f0 !important;
+    font-size: 10px !important;
+  }
+
+  tbody td.font-medium {
+    font-weight: 600 !important;
+    font-size: 10px !important;
   }
 
   tbody tr {
@@ -5108,11 +5140,10 @@ KARTU STOK - PRINT STYLES
     background: transparent !important;
   }
 
-  /* Card styles for print */
   .stok-card {
     box-shadow: none !important;
     border: 1px solid #e2e8f0 !important;
-    padding: 16px !important;
+    padding: 12px !important;
   }
 
   .bg-white {
@@ -5120,12 +5151,10 @@ KARTU STOK - PRINT STYLES
     border: 1px solid #e2e8f0 !important;
   }
 
-  /* Hide hover effects */
   .hover\\:bg-slate-50:hover {
     background: transparent !important;
   }
 
-  /* Page break control */
   .stok-card,
   .bg-white {
     break-inside: avoid;
@@ -5147,31 +5176,33 @@ KARTU STOK - PRINT STYLES
     display: table-footer-group;
   }
 
-  /* Print margins */
   @page {
     margin: 1.5cm;
     size: A4;
   }
 }
 
-/* Mobile adjustments for print header */
+/* Mobile adjustments */
 @media (max-width: 640px) {
   .stok-print-header-content {
-    flex-direction: column;
-    text-align: center;
+    gap: 5px;
+    padding: 12px 0 10px;
   }
 
   .stok-print-logo {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
   }
 
   .stok-print-title {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
   }
 
-  .stok-signature {
-    flex-direction: column;
-    gap: 30px;
+  .stok-print-subtitle.nama-barang {
+    font-size: 0.9rem;
+  }
+
+  .stok-print-subtitle {
+    font-size: 0.78rem;
   }
 }
