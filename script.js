@@ -3839,11 +3839,11 @@ function renderTabStok() {
             <h2 class="text-lg font-bold text-slate-800 truncate">Kartu Stok</h2>
             <p class="text-xs text-slate-500">Barang : <strong class="text-slate-700">${selectedProduct?.nama || '-'}</strong></p>
           </div>
-          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
-            <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
-              <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
+          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
+            <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+              <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
             </div>
-            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Print</span>
+              <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
           </button>
         </div>
       </div>
