@@ -1298,6 +1298,19 @@ tbody tr:hover {
   color: #0369a1;
   display: inline-block;
 }
+
+/* Date Badge di Tabel Master Data */
+.master-table .date-badge {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  display: inline-block;
+}
+
 .master-table .stock-low {
   color: #dc2626;
   font-weight: 700;
@@ -4488,5 +4501,465 @@ tbody tr:hover {
   
   .stok-info-value {
     font-size: 0.85rem;
+  }
+}
+
+/* ========================================
+18. KAS HARIAN PROFESSIONAL STYLES
+======================================== */
+.kas-harian-container {
+  padding-bottom: 100px;
+}
+
+.kas-harian-header {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.kas-harian-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.kas-harian-title h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.kas-harian-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.kas-harian-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.kas-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kas-btn-primary {
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.kas-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+}
+
+.kas-btn-secondary {
+  background: white;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+}
+
+.kas-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Kas Harian Table */
+.kas-table-wrapper {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.kas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 900px;
+}
+
+.kas-table thead {
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: white;
+}
+
+.kas-table thead th {
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+
+/* Header dengan rowspan dan colspan */
+.kas-table thead th[rowspan] {
+  vertical-align: middle;
+}
+
+.kas-table thead th[colspan] {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Sub header Penerimaan */
+.kas-table thead .sub-header-penerimaan {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+/* Sub header Pengeluaran */
+.kas-table thead .sub-header-pengeluaran {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.kas-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.kas-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.kas-table tbody tr.group-header {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+.kas-table tbody tr.group-header td {
+  padding: 10px 8px;
+  color: #0f766e;
+  border-top: 2px solid #0d9488;
+}
+
+.kas-table tbody td {
+  padding: 8px;
+  color: #334155;
+  vertical-align: middle;
+  border: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.kas-table tbody td.text-left {
+  text-align: left;
+}
+
+.kas-table tbody td.text-right {
+  text-align: right;
+}
+
+/* Cell styling */
+.kas-table .cell-number {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #475569;
+}
+
+.kas-table .cell-date {
+  font-weight: 600;
+  color: #0f766e;
+  white-space: nowrap;
+}
+
+.kas-table .cell-receipt {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.kas-table .cell-description {
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+  min-width: 200px;
+}
+
+.kas-table .cell-amount {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.kas-table .cell-penerimaan {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.kas-table .cell-pengeluaran {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.05);
+}
+
+.kas-table .cell-biaya {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.05);
+}
+
+.kas-table .cell-saldo {
+  font-weight: 700;
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+}
+
+/* Footer totals */
+.kas-table tfoot {
+  background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+  font-weight: 700;
+}
+
+.kas-table tfoot tr {
+  border-top: 2px solid #0d9488;
+}
+
+.kas-table tfoot td {
+  padding: 12px 8px;
+  border: 1px solid #ccfbf1;
+  color: #0f766e;
+}
+
+.kas-table tfoot .total-label {
+  text-align: right;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.kas-table tfoot .total-value {
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+}
+
+.kas-table tfoot .total-penerimaan {
+  color: #059669;
+}
+
+.kas-table tfoot .total-pengeluaran {
+  color: #dc2626;
+}
+
+.kas-table tfoot .total-saldo {
+  color: #0d9488;
+  font-size: 1.1rem;
+}
+
+/* Summary Section */
+.kas-summary {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.kas-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.kas-summary-card {
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid #e2e8f0;
+}
+
+.kas-summary-card.penerimaan {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.kas-summary-card.pengeluaran {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.kas-summary-card.saldo {
+  background: #f0fdfa;
+  border-color: #0d9488;
+}
+
+.kas-summary-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.kas-summary-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+}
+
+.kas-summary-card.penerimaan .kas-summary-value {
+  color: #059669;
+}
+
+.kas-summary-card.pengeluaran .kas-summary-value {
+  color: #dc2626;
+}
+
+.kas-summary-card.saldo .kas-summary-value {
+  color: #0d9488;
+}
+
+/* Signature Section */
+.kas-signature {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+  gap: 40px;
+}
+
+.kas-signature-left,
+.kas-signature-right {
+  flex: 1;
+  text-align: center;
+}
+
+.kas-signature-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 60px;
+}
+
+.kas-signature-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 4px;
+  display: inline-block;
+  min-width: 150px;
+}
+
+.kas-signature-role {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Print Styles */
+@media print {
+  .no-print,
+  header,
+  nav,
+  .kas-harian-actions,
+  .kas-summary {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+  }
+  
+  .kas-harian-container {
+    padding: 0;
+  }
+  
+  .kas-harian-header {
+    box-shadow: none;
+    border: 1px solid #000;
+    padding: 16px;
+  }
+  
+  .kas-table-wrapper {
+    box-shadow: none;
+    border: 1px solid #000;
+    overflow: visible;
+  }
+  
+  .kas-table {
+    font-size: 9px;
+  }
+  
+  .kas-table thead {
+    background: #0f766e !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .kas-table tbody tr.group-header {
+    background: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .kas-table tfoot {
+    background: #f0fdfa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .kas-signature {
+    margin-top: 60px;
+  }
+  
+  .kas-signature-title {
+    margin-bottom: 80px;
+  }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .kas-table {
+    font-size: 0.7rem;
+  }
+  
+  .kas-table thead th {
+    padding: 8px 4px;
+    font-size: 0.65rem;
+  }
+  
+  .kas-table tbody td {
+    padding: 6px 4px;
+  }
+  
+  .kas-harian-header {
+    padding: 16px;
+  }
+  
+  .kas-harian-title h2 {
+    font-size: 1.2rem;
+  }
+  
+  .kas-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kas-signature {
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .kas-signature-title {
+    margin-bottom: 40px;
   }
 }
