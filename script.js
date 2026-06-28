@@ -3457,14 +3457,25 @@ function renderTabKasHarian() {
             <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
             <p class="text-xs text-slate-500">Bulan: Januari 2025</p>
           </div>
-          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
+          <!-- ✅ WRAPPER UNTUK MENAMPUNG 2 TOMBOL -->
+    <div class="flex gap-2">
+        <!-- TOMBOL DOWNLOAD EXCEL (BARU) -->
+        <button class="no-print bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="downloadKasHarianExcel()">
             <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
-              <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
+                <i data-lucide="download" class="w-10 h-10 text-blue-500 object-contain sm:w-6 sm:h-6"></i>
+            </div>
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Download Excel</span>
+        </button>
+
+        <!-- TOMBOL PRINT -->
+        <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
+            <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
+                <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
             </div>
             <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Print</span>
-          </button>
-        </div>
-      </div>
+        </button>
+    </div>
+</div>
 
       <!-- Tabel Data -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -3558,6 +3569,212 @@ function renderTabKasHarian() {
 // Function to export to Excel
 function exportToExcel() {
   Notification.info('Fitur export Excel sedang dalam pengembangan', { duration: 3000 });
+}
+
+// ========================================
+// DOWNLOAD KAS HARIAN (EXCEL dengan STYLING LENGKAP)
+// ========================================
+function downloadKasHarianExcel() {
+    // 1. Hitung running balance & total
+    let runningBalance = 2200000;
+    const kasDataWithBalance = mockKasHarian.map(item => {
+        const balance = runningBalance;
+        if (item.inTot) runningBalance += item.inTot;
+        if (item.outTot) runningBalance -= item.outTot;
+        if (item.biaya) runningBalance -= item.biaya;
+        return { ...item, saldo: balance };
+    });
+
+    const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
+    const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
+    const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
+    const saldoAkhir = runningBalance;
+
+    // 2. Helper format Rupiah untuk Excel
+    const fmtRp = (angka) => {
+        if (!angka && angka !== 0) return '-';
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+    };
+
+    // 3. Bangun baris data tabel
+    let rowsHtml = '';
+    kasDataWithBalance.forEach((item, index) => {
+        rowsHtml += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${item.tanggal}</td>
+            <td>${item.bukti || '-'}</td>
+            <td style="text-align:left;">${item.uraian}</td>
+            <td class="text-teal">${item.inJml || '-'}</td>
+            <td class="text-teal">${item.inHrg ? fmtRp(item.inHrg) : '-'}</td>
+            <td class="text-teal font-bold">${item.inTot ? fmtRp(item.inTot) : '-'}</td>
+            <td class="text-rose">${item.outJml || '-'}</td>
+            <td class="text-rose">${item.outHrg ? fmtRp(item.outHrg) : '-'}</td>
+            <td class="text-rose font-bold">${item.outTot ? fmtRp(item.outTot) : '-'}</td>
+            <td class="text-amber">${item.biaya ? fmtRp(item.biaya) : '-'}</td>
+            <td class="font-bold bg-slate-light">${fmtRp(item.saldo)}</td>
+        </tr>`;
+    });
+
+    // 4. Susun HTML lengkap dengan styling inline
+    const tanggalSekarang = new Date().toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    const htmlContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+          xmlns:x="urn:schemas-microsoft-com:office:excel" 
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+        <meta charset="UTF-8">
+        <!--[if gte mso 9]>
+        <xml>
+            <x:ExcelWorkbook>
+                <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                        <x:Name>Kas Harian</x:Name>
+                        <x:WorksheetOptions>
+                            <x:DisplayGridlines/>
+                        </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                </x:ExcelWorksheets>
+            </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 11pt; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; vertical-align: middle; }
+            
+            /* Header Judul */
+            .header-title { font-size: 16pt; font-weight: bold; text-align: center; background: #0d9488; color: white; padding: 12px; }
+            .header-subtitle { font-size: 11pt; text-align: center; background: #f0fdfa; padding: 6px; font-weight: 600; }
+            
+            /* Warna Header Tabel */
+            .bg-slate { background: #1e293b; color: white; font-weight: bold; }
+            .bg-teal { background: #0d9488; color: white; font-weight: bold; }
+            .bg-rose { background: #e11d48; color: white; font-weight: bold; }
+            
+            /* Warna Teks */
+            .text-teal { color: #0d9488; font-weight: 600; }
+            .text-rose { color: #e11d48; font-weight: 600; }
+            .text-amber { color: #d97706; font-weight: 600; }
+            
+            /* Background Sel */
+            .bg-slate-light { background: #f1f5f9; }
+            .bg-teal-light { background: #f0fdfa; }
+            .bg-rose-light { background: #fff1f2; }
+            .bg-amber-light { background: #fffbeb; }
+            
+            /* Utility */
+            .font-bold { font-weight: bold; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
+            
+            /* Footer Total */
+            .total-row { background: #ccfbf1; font-weight: bold; font-size: 12pt; }
+            .saldo-row { background: #0d9488; color: white; font-weight: bold; font-size: 13pt; }
+        </style>
+    </head>
+    <body>
+        <!-- Judul Laporan -->
+        <table>
+            <tr>
+                <td colspan="12" class="header-title">LAPORAN KAS HARIAN - GROSSMART</td>
+            </tr>
+            <tr>
+                <td colspan="12" class="header-subtitle">Periode: Januari 2025 | Dicetak: ${tanggalSekarang}</td>
+            </tr>
+        </table>
+        
+        <br>
+        
+        <!-- Tabel Data -->
+        <table>
+            <!-- Header Baris 1 (dengan colspan) -->
+            <thead>
+                <tr>
+                    <th rowspan="2" class="bg-slate" style="width:40px;">No</th>
+                    <th rowspan="2" class="bg-slate" style="width:120px;">Tanggal</th>
+                    <th rowspan="2" class="bg-slate" style="width:100px;">No. Bukti</th>
+                    <th rowspan="2" class="bg-slate" style="width:220px;">Uraian</th>
+                    <th colspan="3" class="bg-teal">PENERIMAAN</th>
+                    <th colspan="3" class="bg-rose">PENGELUARAN</th>
+                    <th rowspan="2" class="bg-slate" style="width:100px;">Biaya</th>
+                    <th rowspan="2" class="bg-slate" style="width:120px;">Saldo</th>
+                </tr>
+                <tr>
+                    <th class="bg-teal" style="width:50px;">Jml</th>
+                    <th class="bg-teal" style="width:90px;">Hrg</th>
+                    <th class="bg-teal" style="width:110px;">Total</th>
+                    <th class="bg-rose" style="width:50px;">Jml</th>
+                    <th class="bg-rose" style="width:90px;">Hrg</th>
+                    <th class="bg-rose" style="width:110px;">Total</th>
+                </tr>
+            </thead>
+            
+            <!-- Isi Data -->
+            <tbody>
+                ${rowsHtml}
+            </tbody>
+            
+            <!-- Footer Total -->
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="6" class="text-right">SUB TOTAL</td>
+                    <td class="text-teal text-right">${fmtRp(totalPenerimaan)}</td>
+                    <td colspan="2" class="text-right">SUB TOTAL</td>
+                    <td class="text-rose text-right">${fmtRp(totalPengeluaran)}</td>
+                    <td class="text-amber text-right">${fmtRp(totalBiaya)}</td>
+                    <td>-</td>
+                </tr>
+                <tr class="saldo-row">
+                    <td colspan="11" class="text-right">SALDO AKHIR</td>
+                    <td class="text-right">${fmtRp(saldoAkhir)}</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <br><br>
+        
+        <!-- Tanda Tangan -->
+        <table style="border:none;">
+            <tr style="border:none;">
+                <td style="border:none; width:50%; text-align:center; vertical-align:top;">
+                    <p>Mengetahui,<br>Koordinator</p>
+                    <br><br><br>
+                    <p style="border-top:1px solid #000; padding-top:4px;">( ..................... )</p>
+                </td>
+                <td style="border:none; width:50%; text-align:center; vertical-align:top;">
+                    <p>Jakarta, ${tanggalSekarang}<br>Pengelola GrossMart</p>
+                    <br><br><br>
+                    <p style="border-top:1px solid #000; padding-top:4px;">( ..................... )</p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    `;
+
+    // 5. Proses Download File
+    const blob = new Blob(['\ufeff', htmlContent], {
+        type: 'application/vnd.ms-excel;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const tanggalFile = new Date().toISOString().split('T')[0];
+    
+    link.href = url;
+    link.download = `Laporan_Kas_Harian_${tanggalFile}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    // 6. Notifikasi Sukses
+    if (typeof Notification !== 'undefined') {
+        Notification.success("✅ File Excel berhasil didownload dengan format lengkap!", { duration: 3000 });
+    }
 }
 
 function renderTabStok() {
