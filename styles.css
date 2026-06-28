@@ -109,6 +109,12 @@ tbody tr:hover {
   main { padding: 0 !important; max-width: 100% !important; }
   table { width: 100% !important; font-size: 11px !important; }
   th, td { padding: 4px 6px !important; }
+  body { background: white !important; }
+  .stok-signature,
+  .kas-signature,
+  .signature-section {
+    display: none !important;
+  }
 }
 
 /* ========================================
@@ -4961,5 +4967,211 @@ tbody tr:hover {
   
   .kas-signature-title {
     margin-bottom: 40px;
+  }
+}
+
+/* ========================================
+KARTU STOK - PRINT STYLES
+======================================== */
+
+/* Header print (hidden by default) */
+.stok-print-header {
+  display: none;
+}
+
+.stok-print-header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 2px solid #0f766e;
+}
+
+.stok-print-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.stok-print-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f766e;
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+.stok-print-subtitle {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 2px 0;
+  text-align: center;
+}
+
+/* Signature section (hidden by default) */
+.stok-signature {
+  display: none;
+  justify-content: space-between;
+  margin-top: 60px;
+  padding-top: 20px;
+  gap: 40px;
+}
+
+.stok-signature-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stok-signature-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 60px;
+  line-height: 1.5;
+}
+
+.stok-signature-line {
+  border-bottom: 1px solid #334155;
+  width: 180px;
+  margin: 0 auto 8px;
+}
+
+.stok-signature-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 4px;
+}
+
+/* Print Media Query */
+@media print {
+  /* Hide elements that shouldn't print */
+  .no-print,
+  .no-print-header,
+  header,
+  nav,
+  .pos-fullpage-cart,
+  .bottom-nav {
+    display: none !important;
+  }
+
+  /* Show print-specific elements */
+  .stok-print-header,
+  .stok-signature {
+    display: flex !important;
+  }
+
+  .stok-print-header-content {
+    display: flex !important;
+  }
+
+  /* Reset body for print */
+  body {
+    background: white !important;
+    overflow: visible !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Table print styles */
+  table {
+    width: 100% !important;
+    font-size: 10px !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    background: #0f766e !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  thead th {
+    color: white !important;
+    padding: 6px 8px !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+  }
+
+  tbody td {
+    padding: 6px 8px !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  tbody tr:hover {
+    background: transparent !important;
+  }
+
+  /* Card styles for print */
+  .stok-card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 16px !important;
+  }
+
+  .bg-white {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  /* Hide hover effects */
+  .hover\\:bg-slate-50:hover {
+    background: transparent !important;
+  }
+
+  /* Page break control */
+  .stok-card,
+  .bg-white {
+    break-inside: avoid;
+  }
+
+  table {
+    break-inside: auto;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Print margins */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}
+
+/* Mobile adjustments for print header */
+@media (max-width: 640px) {
+  .stok-print-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stok-print-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .stok-print-title {
+    font-size: 1.2rem;
+  }
+
+  .stok-signature {
+    flex-direction: column;
+    gap: 30px;
   }
 }
