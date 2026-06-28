@@ -23,8 +23,10 @@ const mockKasHarian = [
   { id: 3, tanggal: '3 JANUARI 2025', bukti: '', uraian: 'PENJUALAN AQUA', inJml: 5, inHrg: 3000, inTot: 15000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2615000 },
   { id: 4, tanggal: '3 JANUARI 2025', bukti: '', uraian: 'PENJUALAN AQUA GELAS', inJml: 10, inHrg: 500, inTot: 5000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2620000 },
   { id: 5, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'PENJUALAN AQUA BOTOL BESAR', inJml: 4, inHrg: 5000, inTot: 20000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2640000 },
-  { id: 6, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'PEMBELIAN AQUA GELAS 48', inJml: '', inHrg: '', inTot: '', outJml: 48, outHrg: 300, outTot: 14400, biaya: '', saldo: 2709600 },
-  { id: 7, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'BIAYA OPERASIONAL (PEMBERIAN MINUMAN)', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: 50000, saldo: 2627600 },
+  { id: 6, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'PEMBELIAN AQUA GELAS 48', inJml: '', inHrg: '', inTot: '', outJml: 48, outHrg: 300, outTot: 14400, biaya: '', saldo: 2625600 },
+  { id: 7, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'TRANSPORT PEMBELIAN AQUA', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: 15000, saldo: 2610600 },
+  { id: 8, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'PEMBELIAN PLASTIK', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: 17000, saldo: 2593600 },
+  { id: 9, tanggal: '4 JANUARI 2025', bukti: '', uraian: 'BIAYA OPERASIONAL (PEMBERIAN MINUMAN)', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: 50000, saldo: 2543600 },
 ];
 
 const mockKartuStok = {
@@ -2025,52 +2027,54 @@ function renderTabMasterData() {
           <div style="overflow-x: auto;">
             <table class="master-table">
               <thead>
-                <tr>
-                  <th style="width: 50px;">No</th>
-                  <th style="width: 60px;">Foto</th>
-                  <th>Kode</th>
-                  <th>Nama Barang</th>
-                  <th>Kategori</th>
-                  <th style="text-align: right;">Harga Beli</th>
-                  <th style="text-align: right;">Harga Jual</th>
-                  <th style="text-align: center;">Stok</th>
-                  <th style="text-align: center; width: 100px;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${filtered.map((p, i) => `
-                  <tr>
-                    <td>${i + 1}</td>
-                    <td>
-                      ${p.image 
-                        ? `<img src="${p.image}" class="product-thumb" alt="${p.nama}" onerror="this.style.display='none'">`
-                        : `<div class="product-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>`
-                      }
-                    </td>
-                    <td><span class="product-code">${p.kode}</span></td>
-                    <td style="font-weight: 600;">${p.nama}</td>
-                    <td><span class="category-badge">${p.kategori}</span></td>
-                    <td style="text-align: right; color: #64748b;">${formatRp(p.hargaBeli)}</td>
-                    <td style="text-align: right; font-weight: 700; color: #0d9488;">${formatRp(p.harga)}</td>
-                    <td style="text-align: center;">
-                      ${(p.stok || 0) < 10 
-                        ? `<span class="stock-low">${p.stok || 0}</span>` 
-                        : `<span class="stock-ok">${p.stok || 0}</span>`
-                      }
-                    </td>
-                    <td>
-                      <div class="action-btns">
-                        <button class="action-icon-btn edit" data-edit-id="${p.id}" title="Edit">
-                          <i data-lucide="pencil"></i>
-                        </button>
-                        <button class="action-icon-btn delete" data-delete-id="${p.id}" title="Hapus">
-                          <i data-lucide="trash-2"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
+<tr>
+<th style="width: 50px;">No</th>
+<th style="width: 60px;">Foto</th>
+<th>Kode</th>
+<th>Nama Barang</th>
+<th>Kategori</th>
+<th>Tanggal Masuk</th> <!-- KOLOM BARU -->
+<th style="text-align: right;">Harga Beli</th>
+<th style="text-align: right;">Harga Jual</th>
+<th style="text-align: center;">Stok</th>
+<th style="text-align: center; width: 100px;">Aksi</th>
+</tr>
+</thead>
+<tbody>
+${filtered.map((p, i) => `
+<tr>
+<td>${i + 1}</td>
+<td>
+${p.image
+? `<img src="${p.image}" class="product-thumb" alt="${p.nama}" onerror="this.style.display='none'">`
+: `<div class="product-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>`
+}
+</td>
+<td><span class="product-code">${p.kode}</span></td>
+<td style="font-weight: 600;">${p.nama}</td>
+<td><span class="category-badge">${p.kategori}</span></td>
+<td><span class="date-badge">${p.tanggal || '-'}</span></td> <!-- DATA TANGGAL -->
+<td style="text-align: right; color: #64748b;">${formatRp(p.hargaBeli)}</td>
+<td style="text-align: right; font-weight: 700; color: #0d9488;">${formatRp(p.harga)}</td>
+<td style="text-align: center;">
+${(p.stok || 0) < 10
+? `<span class="stock-low">${p.stok || 0}</span>`
+: `<span class="stock-ok">${p.stok || 0}</span>`
+}
+</td>
+<td>
+<div class="action-btns">
+<button class="action-icon-btn edit" data-edit-id="${p.id}" title="Edit">
+<i data-lucide="pencil"></i>
+</button>
+<button class="action-icon-btn delete" data-delete-id="${p.id}" title="Hapus">
+<i data-lucide="trash-2"></i>
+</button>
+</div>
+</td>
+</tr>
+`).join('')}
+</tbody>
             </table>
           </div>
         `}
@@ -2161,13 +2165,18 @@ function openMasterDataModal(editId = null) {
         <div class="md-modal-body">
           <form id="mdForm">
             <div class="md-form-grid">
-              <div class="md-form-group">
-                <label>Kode Barang <span class="required">*</span></label>
-                <input type="text" id="mdKode" value="${product?.kode || ''}" placeholder="Contoh: FB-001" required />
-              </div>
-              <div class="md-form-group">
-                <label>Kategori <span class="required">*</span></label>
-                <select id="mdKategori" required>
+<div class="md-form-group">
+<label>Kode Barang <span class="required">*</span></label>
+<input type="text" id="mdKode" value="${product?.kode || ''}" placeholder="Contoh: FB-001" required />
+</div>
+<!-- INPUT TANGGAL BARU -->
+<div class="md-form-group">
+<label>Tanggal Masuk <span class="required">*</span></label>
+<input type="date" id="mdTanggal" value="${product?.tanggal || new Date().toISOString().split('T')[0]}" required />
+</div>
+<div class="md-form-group">
+<label>Kategori <span class="required">*</span></label>
+<select id="mdKategori" required>
                   <option value="">-- Pilih Kategori --</option>
                   ${kategoriList.map(k => `<option value="${k}" ${product?.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
                 </select>
@@ -2627,6 +2636,7 @@ function closeMasterDataModal() {
 
 async function saveMasterData() {
   const kode = document.getElementById('mdKode').value.trim();
+  const tanggal = document.getElementById('mdTanggal').value;
   const nama = document.getElementById('mdNama').value.trim();
   const kategori = document.getElementById('mdKategori').value;
   const hargaBeli = parseInt(document.getElementById('mdHargaBeli').value) || 0;
@@ -2669,7 +2679,7 @@ async function saveMasterData() {
     if (idx !== -1) {
       mockProducts[idx] = {
         ...mockProducts[idx],
-        kode, nama, kategori,
+        kode, nama, kategori, tanggal,
         hargaBeli, harga: hargaJual,
         stok, image
       };
@@ -2679,7 +2689,7 @@ async function saveMasterData() {
     // CREATE
     const newId = mockProducts.length > 0 ? Math.max(...mockProducts.map(p => p.id)) + 1 : 1;
     mockProducts.push({
-      id: newId, kode, nama, kategori,
+      id: newId, kode, nama, kategori, tanggal,
       hargaBeli, harga: hargaJual,
       stok, image
     });
@@ -2710,14 +2720,14 @@ async function deleteMasterData(id) {
 // MASTER DATA BARANG (Bisa diedit)
 // ========================================
 let mockProducts = [
-  { id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream', stok: 50, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
-  { id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream', stok: 35, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
-  { id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream', stok: 28, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
-  { id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream', stok: 42, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
-  { id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream', stok: 15, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
-  { id: 6, nama: 'Aqua Gelas', kode: 'AG', harga: 500, hargaBeli: 300, image: '', kategori: 'Minuman', stok: 120, supplier: 'PT TIRTA', kontak: '08123456789' },
-  { id: 7, nama: 'Aqua Botol 600ml', kode: 'AB', harga: 3000, hargaBeli: 2500, image: '', kategori: 'Minuman', stok: 80, supplier: 'PT TIRTA', kontak: '08123456789' },
-  { id: 8, nama: 'Nasi Uduk', kode: 'NU', harga: 7000, hargaBeli: 6000, image: '', kategori: 'Makanan', stok: 5, supplier: 'Dapur Bu Siti', kontak: '082198765432' },
+{ id: 1, nama: 'Frost Bite Chocolate Vanilla', kode: 'FB-CNC', tanggal: '2025-01-05', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-chocolate-vanilla.png', kategori: 'Ice Cream', stok: 50, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+{ id: 2, nama: 'Frost Bite Cookies & Cream', kode: 'FB-CC', tanggal: '2025-01-06', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-cookies-&-cream.png', kategori: 'Ice Cream', stok: 35, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+{ id: 3, nama: 'Frost Bite Boba Milk Tea', kode: 'FB-CS', tanggal: '2025-01-07', harga: 5000, hargaBeli: 4000, image: 'asset/frost-bite-boba-milk-tea.png', kategori: 'Ice Cream', stok: 28, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+{ id: 4, nama: 'Frost Bite Coconut Shake', kode: 'FB-CV', tanggal: '2025-01-08', harga: 5000, hargaBeli: 3200, image: 'asset/frost-bite-coconut-shake.png', kategori: 'Ice Cream', stok: 42, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+{ id: 5, nama: 'Frost Bite Crunchy Double Choco', kode: 'FB-LAVA', tanggal: '2025-01-09', harga: 5000, hargaBeli: 4036, image: 'asset/frost-bite-crunchy-double-choco.png', kategori: 'Ice Cream', stok: 15, supplier: 'PT FROST INDONESIA', kontak: '081234567890' },
+{ id: 6, nama: 'Aqua Gelas', kode: 'AG', tanggal: '2025-01-10', harga: 500, hargaBeli: 300, image: '', kategori: 'Minuman', stok: 120, supplier: 'PT TIRTA', kontak: '08123456789' },
+{ id: 7, nama: 'Aqua Botol 600ml', kode: 'AB', tanggal: '2025-01-11', harga: 3000, hargaBeli: 2500, image: '', kategori: 'Minuman', stok: 80, supplier: 'PT TIRTA', kontak: '08123456789' },
+{ id: 8, nama: 'Nasi Uduk', kode: 'NU', tanggal: '2025-01-12', harga: 7000, hargaBeli: 6000, image: '', kategori: 'Makanan', stok: 5, supplier: 'Dapur Bu Siti', kontak: '082198765432' },
 ];
 
 const kategoriList = ['Ice Cream', 'Minuman', 'Makanan', 'Snack', 'Lainnya'];
@@ -3421,6 +3431,23 @@ function renderTabPenjualan() {
 }
 
 function renderTabKasHarian() {
+  // Kelompokkan data berdasarkan tanggal untuk running balance
+  let runningBalance = 2200000; // Saldo awal
+  
+  const kasDataWithBalance = mockKasHarian.map(item => {
+    const balance = runningBalance;
+    if (item.inTot) runningBalance += item.inTot;
+    if (item.outTot) runningBalance -= item.outTot;
+    if (item.biaya) runningBalance -= item.biaya;
+    return { ...item, saldo: balance };
+  });
+
+  // Hitung total
+  const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
+  const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
+  const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
+  const saldoAkhir = runningBalance;
+
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Laporan -->
@@ -3428,18 +3455,18 @@ function renderTabKasHarian() {
         <div class="flex flex-row justify-between items-center gap-3">
           <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
-            <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
+            <p class="text-xs text-slate-500">Bulan: Januari 2025</p>
           </div>
           <button class="bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
             <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
-              <i data-lucide="file-text" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
+              <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
             </div>
             <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Cetak Laporan</span>
           </button>
         </div>
       </div>
 
-      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
+      <!-- Tabel Data -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
@@ -3464,28 +3491,73 @@ function renderTabKasHarian() {
               </tr>
             </thead>
             <tbody>
-              ${mockKasHarian.map((item, index) => `
+              ${kasDataWithBalance.map((item, index) => `
                 <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                   <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
                   <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti || '-'}</td>
                   <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${formatRp(item.inHrg)}</td>
-                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${formatRp(item.inTot)}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${formatRp(item.outHrg)}</td>
-                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${formatRp(item.outTot)}</td>
-                  <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${formatRp(item.biaya)}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml || '-'}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inHrg ? formatRp(item.inHrg) : '-'}</td>
+                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inTot ? formatRp(item.inTot) : '-'}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml || '-'}</td>
+                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outHrg ? formatRp(item.outHrg) : '-'}</td>
+                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outTot ? formatRp(item.outTot) : '-'}</td>
+                  <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${item.biaya ? formatRp(item.biaya) : '-'}</td>
                   <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td>
                 </tr>
               `).join('')}
             </tbody>
+            <tfoot>
+              <!-- SUB TOTAL -->
+              <tr class="bg-teal-50 font-bold border-t-2 border-teal-600">
+                <td colspan="6" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+                <td class="px-2 py-2 text-right text-teal-700 border-r border-teal-500">${formatRp(totalPenerimaan)}</td>
+                <td colspan="2" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+                <td class="px-2 py-2 text-right text-rose-700 border-r border-rose-500">${formatRp(totalPengeluaran)}</td>
+                <td class="px-2 py-2 text-right text-amber-600 border-r border-slate-200">${formatRp(totalBiaya)}</td>
+                <td class="px-2 py-2 text-right bg-slate-50">-</td>
+              </tr>
+              <!-- SALDO AKHIR -->
+              <tr class="bg-slate-100 font-bold border-t border-slate-300">
+                <td colspan="11" class="px-2 py-2 text-right border-r border-slate-200">SALDO AKHIR</td>
+                <td class="px-2 py-2 text-right font-bold text-teal-700 bg-teal-50 text-sm">${formatRp(saldoAkhir)}</td>
+              </tr>
+            </tfoot>
           </table>
+        </div>
+      </div>
+
+      <!-- Tanda Tangan dengan Tanggal -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mt-4">
+        <div class="flex justify-between items-start gap-8 mt-12">
+          <!-- Kolom Kiri: Koordinator -->
+          <div class="flex-1 text-center">
+            <p class="text-xs text-slate-600 mb-16">Mengetahui,<br>Koordinator</p>
+            <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
+          </div>
+          
+          <!-- Kolom Kanan: Pengelola dengan Tanggal -->
+          <div class="flex-1 text-center">
+            <p class="text-xs text-slate-600 mb-16">
+              Jakarta, ${new Date().toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+              })}<br>
+              Pengelola GrossMart
+            </p>
+            <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
+          </div>
         </div>
       </div>
     </div>
   `;
+}
+
+// Function to export to Excel
+function exportToExcel() {
+  Notification.info('Fitur export Excel sedang dalam pengembangan', { duration: 3000 });
 }
 
 function renderTabStok() {
