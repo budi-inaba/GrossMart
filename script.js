@@ -3594,8 +3594,9 @@ function renderTabStok() {
       </div>
 
       <!-- Header Cetak (tampil saat print) -->
-<div class="stok-print-header hidden">
-  <div class="stok-print-header-content">
+    <div class="stok-print-header hidden">
+    <div class="stok-print-header-content">
+
     <!-- Logo di paling atas -->
     <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
     
@@ -3606,10 +3607,10 @@ function renderTabStok() {
     <p class="stok-print-subtitle nama-barang">${selectedProduct?.nama || '-'}</p>
     
     <!-- Kode Barang -->
-    <p class="stok-print-subtitle">Kode : <strong>${selectedProduct?.kode || '-'}</strong></p>
+    <p class="stok-print-subtitle"><strong>${selectedProduct?.kode || '-'}</strong></p>
     
     <!-- Supplier -->
-    <p class="stok-print-subtitle">Supplier : <strong>${selectedProduct?.supplier || '-'}</strong></p>
+    <p class="stok-print-subtitle"><strong>${selectedProduct?.supplier || '-'}</strong></p>
   </div>
 </div>
 
