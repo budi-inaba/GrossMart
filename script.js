@@ -3461,7 +3461,7 @@ function renderTabKasHarian() {
             <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
               <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
             </div>
-            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Cetak Laporan</span>
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Print</span>
           </button>
         </div>
       </div>
@@ -3562,14 +3562,12 @@ function exportToExcel() {
 
 function renderTabStok() {
   const selectedProduct = mockProducts.find(p => p.id === kartuStokState.selectedProductId);
-  
-  // Generate riwayat stok berdasarkan produk yang dipilih (untuk demo)
   const riwayatStok = generateStokHistory(selectedProduct);
-  
+
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Kartu Stok -->
-      <div class="stok-card">
+      <div class="stok-card no-print-header">
         <div class="stok-card-header">
           <div class="stok-card-icon">
             <i data-lucide="package" class="w-6 h-6"></i>
@@ -3579,9 +3577,8 @@ function renderTabStok() {
             <p>Pantau pergerakan stok barang secara detail</p>
           </div>
         </div>
-        
-        <!-- Dropdown Pilih Barang -->
-        <div class="stok-selector">
+        <!-- Dropdown Pilih Barang (hidden saat print) -->
+        <div class="stok-selector no-print">
           <label for="stokProductSelect" class="stok-selector-label">
             <i data-lucide="search" class="w-4 h-4"></i>
             Pilih Barang
@@ -3594,9 +3591,39 @@ function renderTabStok() {
             `).join('')}
           </select>
         </div>
-        
-        <!-- Info Barang -->
-        ${selectedProduct ? `
+      </div>
+
+      <!-- Header Cetak (tampil saat print) -->
+      <div class="stok-print-header hidden">
+        <div class="stok-print-header-content">
+          <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
+          <div>
+            <h2 class="stok-print-title">KARTU STOK BARANG</h2>
+            <p class="stok-print-subtitle">${selectedProduct?.nama || '-'}</p>
+            <p class="stok-print-subtitle">Kode: ${selectedProduct?.kode || '-'} • Supplier: ${selectedProduct?.supplier || '-'}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tombol Cetak -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 no-print">
+        <div class="flex flex-row justify-between items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-800 truncate">Kartu Stok</h2>
+            <p class="text-xs text-slate-500">Barang: ${selectedProduct?.nama || '-'}</p>
+          </div>
+          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
+            <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
+              <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
+            </div>
+            <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Cetak Laporan</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Barang -->
+      ${selectedProduct ? `
+      <div class="stok-card no-print">
         <div class="stok-info-grid">
           <div class="stok-info-item">
             <div class="stok-info-label">
@@ -3627,8 +3654,8 @@ function renderTabStok() {
             <div class="stok-info-value">${selectedProduct.kontak || '-'}</div>
           </div>
         </div>
-        ` : ''}
       </div>
+      ` : ''}
 
       <!-- Tabel Riwayat Stok -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -3660,8 +3687,8 @@ function renderTabStok() {
         </div>
       </div>
 
-      <!-- Catatan Pengisian -->
-      <div class="stok-notes">
+      <!-- Catatan Pengisian (hidden saat print) -->
+      <div class="stok-notes no-print">
         <div class="stok-notes-header">
           <i data-lucide="info" class="w-4 h-4"></i>
           <h4>Catatan Pengisian</h4>
