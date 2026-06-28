@@ -3457,7 +3457,7 @@ function renderTabKasHarian() {
             <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
             <p class="text-xs text-slate-500">Bulan: Januari 2025</p>
           </div>
-          <button class="bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
+          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
             <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
               <i data-lucide="printer" class="w-10 h-10 text-amber-500 object-contain sm:w-6 sm:h-6"></i>
             </div>
