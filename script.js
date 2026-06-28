@@ -3594,23 +3594,31 @@ function renderTabStok() {
       </div>
 
       <!-- Header Cetak (tampil saat print) -->
-      <div class="stok-print-header hidden">
-        <div class="stok-print-header-content">
-          <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
-          <div>
-            <h2 class="stok-print-title">KARTU STOK BARANG</h2>
-            <p class="stok-print-subtitle">${selectedProduct?.nama || '-'}</p>
-            <p class="stok-print-subtitle">Kode: ${selectedProduct?.kode || '-'} • Supplier: ${selectedProduct?.supplier || '-'}</p>
-          </div>
-        </div>
-      </div>
+<div class="stok-print-header hidden">
+  <div class="stok-print-header-content">
+    <!-- Logo di paling atas -->
+    <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
+    
+    <!-- Judul -->
+    <h2 class="stok-print-title">KARTU STOK BARANG</h2>
+    
+    <!-- Nama Barang -->
+    <p class="stok-print-subtitle nama-barang">${selectedProduct?.nama || '-'}</p>
+    
+    <!-- Kode Barang -->
+    <p class="stok-print-subtitle">Kode : <strong>${selectedProduct?.kode || '-'}</strong></p>
+    
+    <!-- Supplier -->
+    <p class="stok-print-subtitle">Supplier : <strong>${selectedProduct?.supplier || '-'}</strong></p>
+  </div>
+</div>
 
       <!-- Tombol Cetak -->
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 no-print">
         <div class="flex flex-row justify-between items-center gap-3">
           <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold text-slate-800 truncate">Kartu Stok</h2>
-            <p class="text-xs text-slate-500">Barang: ${selectedProduct?.nama || '-'}</p>
+            <p class="text-xs text-slate-500">Barang : <strong class="text-slate-700">${selectedProduct?.nama || '-'}</strong></p>
           </div>
           <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-14 h-14 rounded-full p-0 sm:w-auto sm:h-auto sm:rounded-xl sm:px-5 sm:py-3 sm:gap-3" onclick="window.print()">
             <div class="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-10 sm:h-10 sm:rounded-lg">
@@ -3706,18 +3714,99 @@ function renderTabStok() {
 
 function generateStokHistory(product) {
   if (!product) return [];
+
+  const history = [];
+  let runningStock = 0;
+
+  // 1. Entry pertama: Stok awal saat barang ditambahkan (dari master data)
+  if (product.tanggal && product.stok > 0) {
+    // Format tanggal dari master data (YYYY-MM-DD) ke format yang lebih readable
+    const tanggalMasuk = new Date(product.tanggal).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).toUpperCase();
+
+    history.push({
+      id: 1,
+      tanggal: tanggalMasuk,
+      masuk: product.stok,
+      keluar: '',
+      sisa: product.stok,
+      paraf: '✓'
+    });
+    runningStock = product.stok;
+  }
+
+  // 2. Ambil semua transaksi penjualan untuk produk ini dari mockPenjualan
+  const transaksiProduk = mockPenjualan
+    .filter(p => p.kode === product.kode)
+    .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+  // 3. Tambahkan setiap transaksi sebagai stok keluar
+  transaksiProduk.forEach((transaksi, index) => {
+    runningStock -= transaksi.jumlah;
+    
+    history.push({
+      id: history.length + 1,
+      tanggal: transaksi.tanggal,
+      masuk: '',
+      keluar: transaksi.jumlah,
+      sisa: runningStock,
+      paraf: '✓'
+    });
+  });
+
+  // 4. Jika ada pembelian/restock (dari mockKasHarian dengan uraian PEMBELIAN)
+  const pembelianProduk = mockKasHarian
+    .filter(k => k.uraian.includes(product.nama) && k.uraian.includes('PEMBELIAN'))
+    .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+  pembelianProduk.forEach((pembelian, index) => {
+    if (pembelian.outJml) {
+      runningStock += pembelian.outJml;
+      
+      history.push({
+        id: history.length + 1,
+        tanggal: pembelian.tanggal,
+        masuk: pembelian.outJml,
+        keluar: '',
+        sisa: runningStock,
+        paraf: '✓'
+      });
+    }
+  });
+
+  // 5. Sort history berdasarkan tanggal
+  history.sort((a, b) => {
+    const dateA = new Date(a.tanggal);
+    const dateB = new Date(b.tanggal);
+    return dateA - dateB;
+  });
+
+  // 6. Re-numbering dan recalculate running stock
+  let finalStock = 0;
+  const initialStock = product.stok || 0;
   
-  // Generate dummy history based on product
-  const baseStock = product.stok || 0;
-  const history = [
-    { id: 1, tanggal: 'SISA AKHIR BULAN LALU', masuk: '', keluar: '', sisa: Math.floor(baseStock * 0.3), paraf: '✓' },
-    { id: 2, tanggal: '1 BULAN INI', masuk: Math.floor(baseStock * 0.8), keluar: '', sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8), paraf: '✓' },
-    { id: 3, tanggal: '5 BULAN INI', masuk: '', keluar: Math.floor(baseStock * 0.2), sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8) - Math.floor(baseStock * 0.2), paraf: '✓' },
-    { id: 4, tanggal: '10 BULAN INI', masuk: '', keluar: Math.floor(baseStock * 0.15), sisa: Math.floor(baseStock * 0.3) + Math.floor(baseStock * 0.8) - Math.floor(baseStock * 0.2) - Math.floor(baseStock * 0.15), paraf: '✓' },
-    { id: 5, tanggal: '15 BULAN INI', masuk: Math.floor(baseStock * 0.5), keluar: '', sisa: baseStock, paraf: '✓' },
-  ];
-  
-  return history;
+  // Reset dan hitung ulang dengan urutan yang benar
+  return history.map((item, index) => {
+    if (index === 0 && item.masuk) {
+      // Entry pertama adalah stok awal
+      finalStock = item.masuk;
+    } else if (item.masuk) {
+      // Stok masuk
+      finalStock += parseInt(item.masuk);
+    } else if (item.keluar) {
+      // Stok keluar
+      finalStock -= parseInt(item.keluar);
+    }
+    
+    return {
+      ...item,
+      sisa: finalStock,
+      id: index + 1
+    };
+  });
 }
 
 function renderTabRekap() {
