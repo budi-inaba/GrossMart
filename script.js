@@ -1,8 +1,3 @@
-/**
- * GROSSMART - Vanilla JavaScript Implementation
- * Mengkonversi React Component ke Plain JS
- */
-
 // ========================================
 // MOCK DATA
 // ========================================
@@ -3430,140 +3425,156 @@ function renderTabPenjualan() {
 }
 
 function renderTabKasHarian() {
-  // Kelompokkan data berdasarkan tanggal untuk running balance
-  let runningBalance = 2200000; // Saldo awal
-  
-  const kasDataWithBalance = mockKasHarian.map(item => {
-    const balance = runningBalance;
-    if (item.inTot) runningBalance += item.inTot;
-    if (item.outTot) runningBalance -= item.outTot;
-    if (item.biaya) runningBalance -= item.biaya;
-    return { ...item, saldo: balance };
-  });
+    // Kelompokkan data berdasarkan tanggal untuk running balance
+    let runningBalance = 2200000; // Saldo awal
+    const kasDataWithBalance = mockKasHarian.map(item => {
+        if (item.inTot) runningBalance += item.inTot;
+        if (item.outTot) runningBalance -= item.outTot;
+        if (item.biaya) runningBalance -= item.biaya;
+        return { ...item, saldo: runningBalance }; // ✅ PERBAIKAN: Menampilkan saldo SETELAH transaksi
+    });
 
-  // Hitung total
-  const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
-  const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
-  const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
-  const saldoAkhir = runningBalance;
+    // Hitung total
+    const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
+    const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
+    const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
+    const saldoAkhir = runningBalance;
 
-  return `
+    return `
     <div class="space-y-4 pb-20 animate-tab">
-      <!-- Header Laporan -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+    <!-- Header Laporan -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <div class="flex flex-row justify-between items-center gap-3">
-          <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
             <p class="text-xs text-slate-500">Bulan: Januari 2025</p>
-          </div>
-          <!-- ✅ WRAPPER UNTUK MENAMPUNG 2 TOMBOL -->
-          <div class="flex gap-2">
-
-        <!-- TOMBOL DOWNLOAD EXCEL (BARU) -->
-        <button class="no-print bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="downloadKasHarianExcel()">
-        <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
-            <i data-lucide="download" class="w-7 h-7 text-blue-500 object-contain sm:w-4 sm:h-4"></i>
         </div>
-        <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Download Excel</span>
-        </button>
+        <!-- ✅ WRAPPER UNTUK MENAMPUNG TOMBOL -->
+        <div class="flex gap-2 items-center">
+            
+            <!-- TOMBOL TAMBAH KAS DENGAN DROPDOWN -->
+            <div class="relative" id="wrapperTambahKas">
+                <button class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" id="btnTambahKas">
+                    <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+                        <i data-lucide="plus-circle" class="w-7 h-7 text-teal-600 object-contain sm:w-4 sm:h-4"></i>
+                    </div>
+                    <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Tambah Kas</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 hidden sm:inline"></i>
+                </button>
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 z-50 hidden animate-tab" id="dropdownMenuTambahKas" style="animation: fadeInZoom 0.2s ease-out forwards;">
+                    <div class="py-1">
+                        <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnPembelian">
+                            <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 group-hover:bg-teal-100 transition-colors">
+                                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-800">Pembelian Barang</div>
+                                <div class="text-xs text-slate-500">Catat pembelian stok barang</div>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnBiayaTambahan">
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
+                                <i data-lucide="receipt" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-800">Biaya Tambahan</div>
+                                <div class="text-xs text-slate-500">Catat biaya operasional dll</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <!-- TOMBOL PRINT -->
-        <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
-        <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
-            <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
+            <!-- TOMBOL PRINT -->
+            <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
+                <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+                    <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
+                </div>
+                <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
+            </button>
         </div>
-        <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
-        </button>
+        </div>
     </div>
-</div>
 
-      <!-- Tabel Data -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+    <!-- Tabel Data -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
-            <thead class="text-[10px] text-white uppercase tracking-wide">
-              <tr>
-                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No</th>
-                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Tanggal</th>
-                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No. Bukti</th>
-                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800 text-left">Uraian</th>
-                <th colspan="3" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Penerimaan</th>
-                <th colspan="3" class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Pengeluaran</th>
-                <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Biaya</th>
-                <th rowspan="2" class="px-2 py-1.5 bg-slate-800">Saldo</th>
-              </tr>
-              <tr>
-                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Jml</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Hrg</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Total</th>
-                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Jml</th>
-                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Hrg</th>
-                <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${kasDataWithBalance.map((item, index) => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti || '-'}</td>
-                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml || '-'}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inHrg ? formatRp(item.inHrg) : '-'}</td>
-                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inTot ? formatRp(item.inTot) : '-'}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml || '-'}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outHrg ? formatRp(item.outHrg) : '-'}</td>
-                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outTot ? formatRp(item.outTot) : '-'}</td>
-                  <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${item.biaya ? formatRp(item.biaya) : '-'}</td>
-                  <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-            <tfoot>
-              <!-- SUB TOTAL -->
-              <tr class="bg-teal-50 font-bold border-t-2 border-teal-600">
-                <td colspan="6" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
-                <td class="px-2 py-2 text-right text-teal-700 border-r border-teal-500">${formatRp(totalPenerimaan)}</td>
-                <td colspan="2" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
-                <td class="px-2 py-2 text-right text-rose-700 border-r border-rose-500">${formatRp(totalPengeluaran)}</td>
-                <td class="px-2 py-2 text-right text-amber-600 border-r border-slate-200">${formatRp(totalBiaya)}</td>
-                <td class="px-2 py-2 text-right bg-slate-50">-</td>
-              </tr>
-              <!-- SALDO AKHIR -->
-              <tr class="bg-slate-100 font-bold border-t border-slate-300">
-                <td colspan="11" class="px-2 py-2 text-right border-r border-slate-200">SALDO AKHIR</td>
-                <td class="px-2 py-2 text-right font-bold text-teal-700 bg-teal-50 text-sm">${formatRp(saldoAkhir)}</td>
-              </tr>
-            </tfoot>
-          </table>
+            <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+                <thead class="text-[10px] text-white uppercase tracking-wide">
+                    <tr>
+                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No</th>
+                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Tanggal</th>
+                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No. Bukti</th>
+                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800 text-left">Uraian</th>
+                        <th colspan="3" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Penerimaan</th>
+                        <th colspan="3" class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Pengeluaran</th>
+                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Biaya</th>
+                        <th rowspan="2" class="px-2 py-1.5 bg-slate-800">Saldo</th>
+                    </tr>
+                    <tr>
+                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Jml</th>
+                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Hrg</th>
+                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Total</th>
+                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Jml</th>
+                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Hrg</th>
+                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${kasDataWithBalance.map((item, index) => `
+                    <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                        <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti || '-'}</td>
+                        <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml || '-'}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inHrg ? formatRp(item.inHrg) : '-'}</td>
+                        <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inTot ? formatRp(item.inTot) : '-'}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml || '-'}</td>
+                        <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outHrg ? formatRp(item.outHrg) : '-'}</td>
+                        <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outTot ? formatRp(item.outTot) : '-'}</td>
+                        <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${item.biaya ? formatRp(item.biaya) : '-'}</td>
+                        <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-teal-50 font-bold border-t-2 border-teal-600">
+                        <td colspan="6" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+                        <td class="px-2 py-2 text-right text-teal-700 border-r border-teal-500">${formatRp(totalPenerimaan)}</td>
+                        <td colspan="2" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+                        <td class="px-2 py-2 text-right text-rose-700 border-r border-rose-500">${formatRp(totalPengeluaran)}</td>
+                        <td class="px-2 py-2 text-right text-amber-600 border-r border-slate-200">${formatRp(totalBiaya)}</td>
+                        <td class="px-2 py-2 text-right bg-slate-50">-</td>
+                    </tr>
+                    <tr class="bg-slate-100 font-bold border-t border-slate-300">
+                        <td colspan="11" class="px-2 py-2 text-right border-r border-slate-200">SALDO AKHIR</td>
+                        <td class="px-2 py-2 text-right font-bold text-teal-700 bg-teal-50 text-sm">${formatRp(saldoAkhir)}</td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-      </div>
-
-      <!-- Tanda Tangan dengan Tanggal -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mt-4">
-        <div class="flex justify-between items-start gap-8 mt-12">
-          <!-- Kolom Kiri: Koordinator -->
-          <div class="flex-1 text-center">
-            <p class="text-xs text-slate-600 mb-16">Mengetahui,<br>Koordinator</p>
-            <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
-          </div>
-          
-          <!-- Kolom Kanan: Pengelola dengan Tanggal -->
-          <div class="flex-1 text-center">
-            <p class="text-xs text-slate-600 mb-16">
-              Jakarta, ${new Date().toLocaleDateString('id-ID', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-              })}<br>
-              Pengelola GrossMart
-            </p>
-            <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
-          </div>
-        </div>
-      </div>
     </div>
-  `;
+
+    <!-- Tanda Tangan dengan Tanggal -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mt-4">
+        <div class="flex justify-between items-start gap-8 mt-12">
+            <div class="flex-1 text-center">
+                <p class="text-xs text-slate-600 mb-16">Mengetahui,<br>Koordinator</p>
+                <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
+            </div>
+            <div class="flex-1 text-center">
+                <p class="text-xs text-slate-600 mb-16">
+                    Jakarta, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
+                    Pengelola GrossMart
+                </p>
+                <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    `;
 }
 
 // Function to export to Excel
@@ -3572,209 +3583,252 @@ function exportToExcel() {
 }
 
 // ========================================
-// DOWNLOAD KAS HARIAN (EXCEL dengan STYLING LENGKAP)
+// KAS HARIAN - DROPDOWN & MODAL HANDLERS
 // ========================================
-function downloadKasHarianExcel() {
-    // 1. Hitung running balance & total
-    let runningBalance = 2200000;
-    const kasDataWithBalance = mockKasHarian.map(item => {
-        const balance = runningBalance;
-        if (item.inTot) runningBalance += item.inTot;
-        if (item.outTot) runningBalance -= item.outTot;
-        if (item.biaya) runningBalance -= item.biaya;
-        return { ...item, saldo: balance };
-    });
 
-    const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
-    const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
-    const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
-    const saldoAkhir = runningBalance;
+function setupKasHarianListeners() {
+    const btnTambahKas = document.getElementById('btnTambahKas');
+    const dropdown = document.getElementById('dropdownMenuTambahKas');
+    const btnPembelian = document.getElementById('btnPembelian');
+    const btnBiaya = document.getElementById('btnBiayaTambahan');
 
-    // 2. Helper format Rupiah untuk Excel
-    const fmtRp = (angka) => {
-        if (!angka && angka !== 0) return '-';
-        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
-    };
+    if (btnTambahKas && dropdown) {
+        btnTambahKas.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('hidden');
+        });
 
-    // 3. Bangun baris data tabel
-    let rowsHtml = '';
-    kasDataWithBalance.forEach((item, index) => {
-        rowsHtml += `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${item.tanggal}</td>
-            <td>${item.bukti || '-'}</td>
-            <td style="text-align:left;">${item.uraian}</td>
-            <td class="text-teal">${item.inJml || '-'}</td>
-            <td class="text-teal">${item.inHrg ? fmtRp(item.inHrg) : '-'}</td>
-            <td class="text-teal font-bold">${item.inTot ? fmtRp(item.inTot) : '-'}</td>
-            <td class="text-rose">${item.outJml || '-'}</td>
-            <td class="text-rose">${item.outHrg ? fmtRp(item.outHrg) : '-'}</td>
-            <td class="text-rose font-bold">${item.outTot ? fmtRp(item.outTot) : '-'}</td>
-            <td class="text-amber">${item.biaya ? fmtRp(item.biaya) : '-'}</td>
-            <td class="font-bold bg-slate-light">${fmtRp(item.saldo)}</td>
-        </tr>`;
-    });
-
-    // 4. Susun HTML lengkap dengan styling inline
-    const tanggalSekarang = new Date().toLocaleDateString('id-ID', {
-        day: 'numeric', month: 'long', year: 'numeric'
-    });
-
-    const htmlContent = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
-          xmlns:x="urn:schemas-microsoft-com:office:excel" 
-          xmlns="http://www.w3.org/TR/REC-html40">
-    <head>
-        <meta charset="UTF-8">
-        <!--[if gte mso 9]>
-        <xml>
-            <x:ExcelWorkbook>
-                <x:ExcelWorksheets>
-                    <x:ExcelWorksheet>
-                        <x:Name>Kas Harian</x:Name>
-                        <x:WorksheetOptions>
-                            <x:DisplayGridlines/>
-                        </x:WorksheetOptions>
-                    </x:ExcelWorksheet>
-                </x:ExcelWorksheets>
-            </x:ExcelWorkbook>
-        </xml>
-        <![endif]-->
-        <style>
-            body { font-family: Arial, sans-serif; font-size: 11pt; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; vertical-align: middle; }
-            
-            /* Header Judul */
-            .header-title { font-size: 16pt; font-weight: bold; text-align: center; background: #0d9488; color: white; padding: 12px; }
-            .header-subtitle { font-size: 11pt; text-align: center; background: #f0fdfa; padding: 6px; font-weight: 600; }
-            
-            /* Warna Header Tabel */
-            .bg-slate { background: #1e293b; color: white; font-weight: bold; }
-            .bg-teal { background: #0d9488; color: white; font-weight: bold; }
-            .bg-rose { background: #e11d48; color: white; font-weight: bold; }
-            
-            /* Warna Teks */
-            .text-teal { color: #0d9488; font-weight: 600; }
-            .text-rose { color: #e11d48; font-weight: 600; }
-            .text-amber { color: #d97706; font-weight: 600; }
-            
-            /* Background Sel */
-            .bg-slate-light { background: #f1f5f9; }
-            .bg-teal-light { background: #f0fdfa; }
-            .bg-rose-light { background: #fff1f2; }
-            .bg-amber-light { background: #fffbeb; }
-            
-            /* Utility */
-            .font-bold { font-weight: bold; }
-            .text-left { text-align: left; }
-            .text-right { text-align: right; }
-            
-            /* Footer Total */
-            .total-row { background: #ccfbf1; font-weight: bold; font-size: 12pt; }
-            .saldo-row { background: #0d9488; color: white; font-weight: bold; font-size: 13pt; }
-        </style>
-    </head>
-    <body>
-        <!-- Judul Laporan -->
-        <table>
-            <tr>
-                <td colspan="12" class="header-title">LAPORAN KAS HARIAN - GROSSMART</td>
-            </tr>
-            <tr>
-                <td colspan="12" class="header-subtitle">Periode: Januari 2025 | Dicetak: ${tanggalSekarang}</td>
-            </tr>
-        </table>
-        
-        <br>
-        
-        <!-- Tabel Data -->
-        <table>
-            <!-- Header Baris 1 (dengan colspan) -->
-            <thead>
-                <tr>
-                    <th rowspan="2" class="bg-slate" style="width:40px;">No</th>
-                    <th rowspan="2" class="bg-slate" style="width:120px;">Tanggal</th>
-                    <th rowspan="2" class="bg-slate" style="width:100px;">No. Bukti</th>
-                    <th rowspan="2" class="bg-slate" style="width:220px;">Uraian</th>
-                    <th colspan="3" class="bg-teal">PENERIMAAN</th>
-                    <th colspan="3" class="bg-rose">PENGELUARAN</th>
-                    <th rowspan="2" class="bg-slate" style="width:100px;">Biaya</th>
-                    <th rowspan="2" class="bg-slate" style="width:120px;">Saldo</th>
-                </tr>
-                <tr>
-                    <th class="bg-teal" style="width:50px;">Jml</th>
-                    <th class="bg-teal" style="width:90px;">Hrg</th>
-                    <th class="bg-teal" style="width:110px;">Total</th>
-                    <th class="bg-rose" style="width:50px;">Jml</th>
-                    <th class="bg-rose" style="width:90px;">Hrg</th>
-                    <th class="bg-rose" style="width:110px;">Total</th>
-                </tr>
-            </thead>
-            
-            <!-- Isi Data -->
-            <tbody>
-                ${rowsHtml}
-            </tbody>
-            
-            <!-- Footer Total -->
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="6" class="text-right">SUB TOTAL</td>
-                    <td class="text-teal text-right">${fmtRp(totalPenerimaan)}</td>
-                    <td colspan="2" class="text-right">SUB TOTAL</td>
-                    <td class="text-rose text-right">${fmtRp(totalPengeluaran)}</td>
-                    <td class="text-amber text-right">${fmtRp(totalBiaya)}</td>
-                    <td>-</td>
-                </tr>
-                <tr class="saldo-row">
-                    <td colspan="11" class="text-right">SALDO AKHIR</td>
-                    <td class="text-right">${fmtRp(saldoAkhir)}</td>
-                </tr>
-            </tfoot>
-        </table>
-        
-        <br><br>
-        
-        <!-- Tanda Tangan -->
-        <table style="border:none;">
-            <tr style="border:none;">
-                <td style="border:none; width:50%; text-align:center; vertical-align:top;">
-                    <p>Mengetahui,<br>Koordinator</p>
-                    <br><br><br>
-                    <p style="border-top:1px solid #000; padding-top:4px;">( ..................... )</p>
-                </td>
-                <td style="border:none; width:50%; text-align:center; vertical-align:top;">
-                    <p>Jakarta, ${tanggalSekarang}<br>Pengelola GrossMart</p>
-                    <br><br><br>
-                    <p style="border-top:1px solid #000; padding-top:4px;">( ..................... )</p>
-                </td>
-            </tr>
-        </table>
-    </body>
-    </html>
-    `;
-
-    // 5. Proses Download File
-    const blob = new Blob(['\ufeff', htmlContent], {
-        type: 'application/vnd.ms-excel;charset=utf-8'
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const tanggalFile = new Date().toISOString().split('T')[0];
-    
-    link.href = url;
-    link.download = `Laporan_Kas_Harian_${tanggalFile}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    // 6. Notifikasi Sukses
-    if (typeof Notification !== 'undefined') {
-        Notification.success("✅ File Excel berhasil didownload dengan format lengkap!", { duration: 3000 });
+        // Tutup dropdown jika klik di luar area
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#wrapperTambahKas')) {
+                dropdown.classList.add('hidden');
+            }
+        });
     }
+
+    if (btnPembelian) btnPembelian.addEventListener('click', openPembelianModal);
+    if (btnBiaya) btnBiaya.addEventListener('click', openBiayaTambahanModal);
+}
+
+// --- MODAL PEMBELIAN BARANG ---
+function openPembelianModal() {
+    document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
+    const modalHtml = `
+    <div class="md-modal-overlay active" id="pembelianModalOverlay">
+        <div class="md-modal">
+            <div class="md-modal-header">
+                <h3><i data-lucide="shopping-cart"></i> Pembelian Barang</h3>
+                <button class="md-modal-close" id="pembelianModalClose"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="md-modal-body">
+                <form id="pembelianForm">
+                    <div class="md-form-grid">
+                        <div class="md-form-group">
+                            <label>Tanggal <span class="required">*</span></label>
+                            <input type="date" id="pembelianTanggal" value="${new Date().toISOString().split('T')[0]}" required />
+                        </div>
+                        <div class="md-form-group">
+                            <label>Supplier / Toko <span class="required">*</span></label>
+                            <input type="text" id="pembelianSupplier" placeholder="Nama supplier" required />
+                        </div>
+                        <div class="md-form-group full">
+                            <label>Nama Barang <span class="required">*</span></label>
+                            <select id="pembelianBarang" required>
+                                <option value="">-- Pilih Barang --</option>
+                                ${mockProducts.map(p => `<option value="${p.id}">${p.nama} (${p.kode})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="md-form-group">
+                            <label>Jumlah Beli <span class="required">*</span></label>
+                            <input type="number" id="pembelianJumlah" placeholder="0" min="1" required />
+                        </div>
+                        <div class="md-form-group">
+                            <label>Harga Beli Satuan <span class="required">*</span></label>
+                            <input type="number" id="pembelianHarga" placeholder="0" min="0" required />
+                        </div>
+                        <div class="md-form-group full">
+                            <label>Keterangan</label>
+                            <textarea id="pembelianKeterangan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="md-modal-footer">
+                <button class="md-btn md-btn-cancel" id="pembelianCancelBtn">Batal</button>
+                <button class="md-btn md-btn-save" id="pembelianSaveBtn"><i data-lucide="save" class="w-4 h-4"></i> Simpan Pembelian</button>
+            </div>
+        </div>
+    </div>`;
+    
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = modalHtml;
+    document.body.appendChild(wrapper.firstElementChild);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Auto-fill supplier dan harga saat barang dipilih
+    const selectBarang = document.getElementById('pembelianBarang');
+    const inputSupplier = document.getElementById('pembelianSupplier');
+    const inputHarga = document.getElementById('pembelianHarga');
+    
+    selectBarang.addEventListener('change', (e) => {
+        const product = mockProducts.find(p => p.id === parseInt(e.target.value));
+        if (product) {
+            if (product.supplier) inputSupplier.value = product.supplier;
+            inputHarga.value = product.hargaBeli;
+        }
+    });
+
+    document.getElementById('pembelianModalClose').addEventListener('click', closePembelianModal);
+    document.getElementById('pembelianCancelBtn').addEventListener('click', closePembelianModal);
+    document.getElementById('pembelianModalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'pembelianModalOverlay') closePembelianModal();
+    });
+    document.getElementById('pembelianSaveBtn').addEventListener('click', savePembelian);
+
+    const escHandler = (e) => {
+        if (e.key === 'Escape') { closePembelianModal(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
+function closePembelianModal() {
+    const overlay = document.getElementById('pembelianModalOverlay');
+    if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+function savePembelian() {
+    const tanggal = document.getElementById('pembelianTanggal').value;
+    const supplier = document.getElementById('pembelianSupplier').value.trim();
+    const barangId = parseInt(document.getElementById('pembelianBarang').value);
+    const jumlah = parseInt(document.getElementById('pembelianJumlah').value);
+    const harga = parseInt(document.getElementById('pembelianHarga').value);
+    const keterangan = document.getElementById('pembelianKeterangan').value.trim();
+
+    if (!tanggal || !supplier || !barangId || !jumlah || !harga) {
+        Notification.warning('Semua field wajib diisi!', { duration: 3000 });
+        return;
+    }
+
+    const product = mockProducts.find(p => p.id === barangId);
+    if (!product) return;
+
+    const total = jumlah * harga;
+    const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+
+    // 1. Tambahkan ke Kas Harian (Pengeluaran)
+    const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
+    mockKasHarian.push({
+        id: kasId, tanggal: tanggalFormatted, bukti: '',
+        uraian: `PEMBELIAN ${product.nama}${keterangan ? ' - ' + keterangan : ''}`,
+        inJml: '', inHrg: '', inTot: '',
+        outJml: jumlah, outHrg: harga, outTot: total,
+        biaya: '', saldo: 0 // Saldo akan dihitung ulang otomatis oleh renderTabKasHarian
+    });
+
+    // 2. Tambahkan stok barang di Master Data
+    product.stok += jumlah;
+
+    Notification.success(`Pembelian ${product.nama} sebanyak ${jumlah} berhasil dicatat!`, { duration: 3000 });
+    closePembelianModal();
+    
+    if (activeTab === 'kas') switchTab('kas');
+    if (activeTab === 'master') refreshMasterData();
+}
+
+// --- MODAL BIAYA TAMBAHAN ---
+function openBiayaTambahanModal() {
+    document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
+    const modalHtml = `
+    <div class="md-modal-overlay active" id="biayaModalOverlay">
+        <div class="md-modal">
+            <div class="md-modal-header" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                <h3><i data-lucide="receipt"></i> Biaya Tambahan</h3>
+                <button class="md-modal-close" id="biayaModalClose"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="md-modal-body">
+                <form id="biayaForm">
+                    <div class="md-form-grid">
+                        <div class="md-form-group">
+                            <label>Tanggal <span class="required">*</span></label>
+                            <input type="date" id="biayaTanggal" value="${new Date().toISOString().split('T')[0]}" required />
+                        </div>
+                        <div class="md-form-group">
+                            <label>Kategori Biaya</label>
+                            <select id="biayaKategori">
+                                <option value="Operasional">Operasional</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Listrik & Air">Listrik & Air</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="md-form-group full">
+                            <label>Uraian / Keterangan <span class="required">*</span></label>
+                            <input type="text" id="biayaUraian" placeholder="Contoh: Biaya kebersihan, Transport beli barang" required />
+                        </div>
+                        <div class="md-form-group full">
+                            <label>Jumlah Biaya (Rp) <span class="required">*</span></label>
+                            <input type="number" id="biayaJumlah" placeholder="0" min="0" required />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="md-modal-footer">
+                <button class="md-btn md-btn-cancel" id="biayaCancelBtn">Batal</button>
+                <button class="md-btn md-btn-save" id="biayaSaveBtn" style="background: linear-gradient(135deg, #d97706, #f59e0b);"><i data-lucide="save" class="w-4 h-4"></i> Simpan Biaya</button>
+            </div>
+        </div>
+    </div>`;
+    
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = modalHtml;
+    document.body.appendChild(wrapper.firstElementChild);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    document.getElementById('biayaModalClose').addEventListener('click', closeBiayaModal);
+    document.getElementById('biayaCancelBtn').addEventListener('click', closeBiayaModal);
+    document.getElementById('biayaModalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'biayaModalOverlay') closeBiayaModal();
+    });
+    document.getElementById('biayaSaveBtn').addEventListener('click', saveBiayaTambahan);
+
+    const escHandler = (e) => {
+        if (e.key === 'Escape') { closeBiayaModal(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
+function closeBiayaModal() {
+    const overlay = document.getElementById('biayaModalOverlay');
+    if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+function saveBiayaTambahan() {
+    const tanggal = document.getElementById('biayaTanggal').value;
+    const kategori = document.getElementById('biayaKategori').value;
+    const uraian = document.getElementById('biayaUraian').value.trim();
+    const jumlah = parseInt(document.getElementById('biayaJumlah').value);
+
+    if (!tanggal || !uraian || !jumlah) {
+        Notification.warning('Semua field wajib diisi!', { duration: 3000 });
+        return;
+    }
+
+    const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+
+    // Tambahkan ke Kas Harian (Biaya)
+    const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
+    mockKasHarian.push({
+        id: kasId, tanggal: tanggalFormatted, bukti: '',
+        uraian: `${kategori.toUpperCase()} - ${uraian}`,
+        inJml: '', inHrg: '', inTot: '',
+        outJml: '', outHrg: '', outTot: '',
+        biaya: jumlah, saldo: 0 // Saldo akan dihitung ulang otomatis
+    });
+
+    Notification.success(`Biaya "${uraian}" sebesar ${formatRp(jumlah)} berhasil dicatat!`, { duration: 3000 });
+    closeBiayaModal();
+    
+    if (activeTab === 'kas') switchTab('kas');
 }
 
 function renderTabStok() {
@@ -4135,26 +4189,23 @@ function renderBottomNav() {
 }
 
 function switchTab(tabId) {
-  activeTab = tabId;
-  const mainContent = document.getElementById('mainContent');
-  if (mainContent) {
-    mainContent.innerHTML = renderContent(tabId);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-    const animatedContent = mainContent.querySelector('.animate-tab');
-    if (animatedContent) {
-      animatedContent.style.animation = 'none';
-      setTimeout(() => animatedContent.style.animation = 'fadeInZoom 0.2s ease-out forwards', 10);
+    activeTab = tabId;
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) {
+        mainContent.innerHTML = renderContent(tabId);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        const animatedContent = mainContent.querySelector('.animate-tab');
+        if (animatedContent) {
+            animatedContent.style.animation = 'none';
+            setTimeout(() => animatedContent.style.animation = 'fadeInZoom 0.2s ease-out forwards', 10);
+        }
+        
+        // ✅ Setup listeners khusus
+        if (tabId === 'master') setupMasterDataListeners();
+        if (tabId === 'stok') setupStokListeners();
+        if (tabId === 'kas') setupKasHarianListeners(); // ✅ TAMBAHKAN INI
     }
-    
-    // ✅ Setup listeners khusus
-    if (tabId === 'master') {
-      setupMasterDataListeners();
-    }
-    if (tabId === 'stok') {
-      setupStokListeners();
-    }
-  }
-  renderBottomNav();
+    renderBottomNav();
 }
 
 function setupStokListeners() {
