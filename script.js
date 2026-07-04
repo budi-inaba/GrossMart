@@ -3784,16 +3784,29 @@ function renderTabStok() {
   return `
     <div class="space-y-4 pb-20 animate-tab">
       <!-- Header Kartu Stok -->
-      <div class="stok-card no-print-header">
-        <div class="stok-card-header">
+          <!-- Header Kartu Stok -->
+    <div class="stok-card no-print-header">
+      <div class="stok-card-header">
+        <!-- Wrapper Kiri: Ikon & Judul -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
           <div class="stok-card-icon">
             <i data-lucide="package" class="w-6 h-6"></i>
           </div>
-          <div class="stok-card-title">
+          <div class="stok-card-title min-w-0">
             <h2>Kartu Stok Barang</h2>
             <p>Pantau pergerakan stok barang secara detail</p>
           </div>
         </div>
+        
+        <!-- Tombol Print (Dipindahkan ke sini) -->
+        <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
+          <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+            <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
+          </div>
+          <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
+        </button>
+      </div>
+
         <!-- Dropdown Pilih Barang (hidden saat print) -->
         <div class="stok-selector no-print">
           <label for="stokProductSelect" class="stok-selector-label">
@@ -3830,22 +3843,6 @@ function renderTabStok() {
     <p class="stok-print-subtitle"><strong>${selectedProduct?.supplier || '-'}</strong></p>
   </div>
 </div>
-
-      <!-- Tombol Cetak -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 no-print">
-        <div class="flex flex-row justify-between items-center gap-3">
-          <div class="min-w-0 flex-1">
-            <h2 class="text-lg font-bold text-slate-800 truncate">Kartu Stok</h2>
-            <p class="text-xs text-slate-500">Barang : <strong class="text-slate-700">${selectedProduct?.nama || '-'}</strong></p>
-          </div>
-          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
-            <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
-              <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
-            </div>
-              <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
-          </button>
-        </div>
-      </div>
 
       <!-- Info Barang -->
       ${selectedProduct ? `
