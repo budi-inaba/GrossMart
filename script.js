@@ -2212,7 +2212,7 @@ function openMasterDataModal(editId = null) {
                   <div class="image-upload-options">
                     <label class="upload-btn" for="mdImageUpload">
                       <i data-lucide="upload" class="w-4 h-4"></i>
-                      <span>Upload File</span>
+                      <span>Upload Foto</span>
                       <input type="file" id="mdImageUpload" accept="image/*" style="display: none;" />
                     </label>
                     <button type="button" class="upload-btn camera-btn" id="cameraBtn">
@@ -2394,7 +2394,7 @@ function setupImageUploadHandlers() {
     urlToggleBtn.addEventListener('click', () => {
       if (imageUrlInput.style.display === 'none') {
         imageUrlInput.style.display = 'flex';
-        urlToggleBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload File</span>';
+        urlToggleBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload Foto</span>';
         if (urlInput) urlInput.focus();
       } else {
         imageUrlInput.style.display = 'none';
@@ -3610,9 +3610,12 @@ function setupKasHarianListeners() {
     if (btnBiaya) btnBiaya.addEventListener('click', openBiayaTambahanModal);
 }
 
-// --- MODAL PEMBELIAN BARANG ---
+// ========================================
+// MODAL PEMBELIAN BARANG (FULL MANUAL INPUT)
+// ========================================
 function openPembelianModal() {
     document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
+    
     const modalHtml = `
     <div class="md-modal-overlay active" id="pembelianModalOverlay">
         <div class="md-modal">
@@ -3623,39 +3626,109 @@ function openPembelianModal() {
             <div class="md-modal-body">
                 <form id="pembelianForm">
                     <div class="md-form-grid">
+                        <!-- Baris 1: Tanggal & Kode Barang -->
                         <div class="md-form-group">
-                            <label>Tanggal <span class="required">*</span></label>
+                            <label>Tanggal Pembelian <span class="required">*</span></label>
                             <input type="date" id="pembelianTanggal" value="${new Date().toISOString().split('T')[0]}" required />
                         </div>
                         <div class="md-form-group">
-                            <label>Supplier / Toko <span class="required">*</span></label>
-                            <input type="text" id="pembelianSupplier" placeholder="Nama supplier" required />
+                            <label>Kode Barang <span class="required">*</span></label>
+                            <input type="text" id="pembelianKode" placeholder="Contoh: BRG-001, AG, NU" required />
                         </div>
+
+                        <!-- Baris 2: Nama Barang (Full Width - MANUAL) -->
                         <div class="md-form-group full">
                             <label>Nama Barang <span class="required">*</span></label>
-                            <select id="pembelianBarang" required>
-                                <option value="">-- Pilih Barang --</option>
-                                ${mockProducts.map(p => `<option value="${p.id}">${p.nama} (${p.kode})</option>`).join('')}
+                            <input type="text" id="pembelianNamaBarang" placeholder="Ketik nama barang yang dibeli" required />
+                        </div>
+
+                        <!-- Baris 3: Kategori & Supplier (MANUAL) -->
+                        <div class="md-form-group">
+                            <label>Kategori <span class="required">*</span></label>
+                            <select id="pembelianKategori" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                ${kategoriList.map(k => `<option value="${k}">${k}</option>`).join('')}
                             </select>
                         </div>
                         <div class="md-form-group">
-                            <label>Jumlah Beli <span class="required">*</span></label>
-                            <input type="number" id="pembelianJumlah" placeholder="0" min="1" required />
+                            <label>Supplier</label>
+                            <input type="text" id="pembelianSupplier" placeholder="Nama supplier (opsional)" />
+                        </div>
+
+                        <!-- Baris 4: Harga Beli & Harga Jual -->
+                        <div class="md-form-group">
+                            <label>Harga Beli (Rp) <span class="required">*</span></label>
+                            <input type="number" id="pembelianHargaBeli" placeholder="0" min="0" required />
                         </div>
                         <div class="md-form-group">
-                            <label>Harga Beli Satuan <span class="required">*</span></label>
-                            <input type="number" id="pembelianHarga" placeholder="0" min="0" required />
+                            <label>Harga Jual (Rp) <span class="required">*</span></label>
+                            <input type="number" id="pembelianHargaJual" placeholder="0" min="0" required />
                         </div>
+
+                        <!-- Baris 5: Jumlah Pembelian -->
                         <div class="md-form-group full">
-                            <label>Keterangan</label>
-                            <textarea id="pembelianKeterangan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+                            <label>Jumlah Pembelian <span class="required">*</span></label>
+                            <input type="number" id="pembelianJumlah" placeholder="0" min="1" value="1" required />
+                        </div>
+
+                        <!-- Baris 6: Total Otomatis (Full Width) -->
+                        <div class="md-form-group full">
+                            <label>Total Pembayaran</label>
+                            <div style="padding: 12px 16px; background: linear-gradient(135deg, #f0fdfa, #ecfeff); border: 2px solid #14b8a6; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: #0f766e; font-weight: 600;">
+                                    <i data-lucide="calculator" style="width:16px; height:16px; display:inline-block; vertical-align:middle; margin-right:4px;"></i>
+                                    Total
+                                </span>
+                                <span id="pembelianTotalDisplay" style="font-size: 1.2rem; font-weight: 800; color: #0d9488; font-family: 'Courier New', monospace;">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Baris 7: Upload / Ambil Foto (Full Width) -->
+                        <div class="md-form-group full">
+                            <label>Foto Produk</label>
+                            <div class="image-upload-container">
+                                <div class="image-preview-area" id="pembelianImagePreviewArea">
+                                    <div class="upload-placeholder">
+                                        <i data-lucide="image-plus" class="w-12 h-12"></i>
+                                        <p>Belum ada foto</p>
+                                    </div>
+                                </div>
+                                <div class="image-upload-options">
+                                    <label class="upload-btn camera-btn" for="pembelianImageUpload">
+                                          <i data-lucide="upload" class="w-4 h-4"></i>
+                                          <span>Upload Foto</span>
+                                          <input type="file" id="pembelianImageUpload" accept="image/*" style="display: none;" />
+                                    </label>
+                                    <button type="button" class="upload-btn camera-btn" id="pembelianCameraBtn">
+                                        <i data-lucide="camera" class="w-4 h-4"></i>
+                                        <span>Ambil Foto</span>
+                                    </button>
+                                    <button type="button" class="url-toggle-btn" id="pembelianUrlToggleBtn">
+                                        <i data-lucide="link" class="w-4 h-4"></i>
+                                        <span>Gunakan URL</span>
+                                    </button>
+                                </div>
+                                <div class="image-url-input" id="pembelianImageUrlInput" style="display: none;">
+                                    <input type="text" id="pembelianImageUrl" placeholder="https://example.com/gambar.jpg" />
+                                    <button type="button" class="apply-url-btn" id="pembelianApplyUrlBtn">Terapkan</button>
+                                </div>
+                                <small class="upload-hint">Format: JPG, PNG, WebP (Maks. 2MB) • Atau gunakan kamera</small>
+                            </div>
+                        </div>
+
+                        <!-- Baris 8: Keterangan Tambahan -->
+                        <div class="md-form-group full">
+                            <label>Keterangan Tambahan</label>
+                            <textarea id="pembelianKeterangan" rows="2" placeholder="Catatan tambahan (opsional) - contoh: pembelian darurat, diskon khusus"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="md-modal-footer">
                 <button class="md-btn md-btn-cancel" id="pembelianCancelBtn">Batal</button>
-                <button class="md-btn md-btn-save" id="pembelianSaveBtn"><i data-lucide="save" class="w-4 h-4"></i> Simpan Pembelian</button>
+                <button class="md-btn md-btn-save" id="pembelianSaveBtn">
+                    <i data-lucide="save" class="w-4 h-4"></i> Simpan Pembelian
+                </button>
             </div>
         </div>
     </div>`;
@@ -3665,19 +3738,136 @@ function openPembelianModal() {
     document.body.appendChild(wrapper.firstElementChild);
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Auto-fill supplier dan harga saat barang dipilih
-    const selectBarang = document.getElementById('pembelianBarang');
-    const inputSupplier = document.getElementById('pembelianSupplier');
-    const inputHarga = document.getElementById('pembelianHarga');
-    
-    selectBarang.addEventListener('change', (e) => {
-        const product = mockProducts.find(p => p.id === parseInt(e.target.value));
-        if (product) {
-            if (product.supplier) inputSupplier.value = product.supplier;
-            inputHarga.value = product.hargaBeli;
-        }
-    });
+    // === Camera Modal ===
+    const cameraModalHtml = `
+    <div class="camera-modal-overlay" id="pembelianCameraModalOverlay" style="display: none;">
+        <div class="camera-modal">
+            <div class="camera-modal-header">
+                <h3><i data-lucide="camera" class="w-5 h-5"></i> Ambil Foto Produk</h3>
+                <button class="camera-close-btn" id="pembelianCameraCloseBtn"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="camera-modal-body">
+                <div class="camera-container">
+                    <video id="pembelianCameraVideo" autoplay playsinline></video>
+                    <canvas id="pembelianCameraCanvas" style="display: none;"></canvas>
+                </div>
+                <div class="camera-controls">
+                    <button class="camera-action-btn cancel" id="pembelianCameraCancelBtn"><i data-lucide="x" class="w-5 h-5"></i> Batal</button>
+                    <button class="camera-action-btn capture" id="pembelianCameraCaptureBtn"><i data-lucide="camera" class="w-6 h-6"></i> Ambil Foto</button>
+                    <button class="camera-action-btn retake" id="pembelianCameraRetakeBtn" style="display: none;"><i data-lucide="rotate-ccw" class="w-5 h-5"></i> Ulangi</button>
+                    <button class="camera-action-btn save" id="pembelianCameraSaveBtn" style="display: none;"><i data-lucide="check" class="w-5 h-5"></i> Gunakan</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    const cameraWrapper = document.createElement('div');
+    cameraWrapper.innerHTML = cameraModalHtml;
+    document.body.appendChild(cameraWrapper.firstElementChild);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
+    // === Setup Listeners ===
+    const inputHargaBeli = document.getElementById('pembelianHargaBeli');
+    const inputJumlah = document.getElementById('pembelianJumlah');
+    const totalDisplay = document.getElementById('pembelianTotalDisplay');
+    const previewArea = document.getElementById('pembelianImagePreviewArea');
+
+    // Auto-calculate total saat jumlah atau harga beli berubah
+    const updatePembelianTotal = () => {
+        const jumlah = parseInt(inputJumlah.value) || 0;
+        const harga = parseInt(inputHargaBeli.value) || 0;
+        totalDisplay.textContent = formatRp(jumlah * harga);
+    };
+    inputJumlah.addEventListener('input', updatePembelianTotal);
+    inputHargaBeli.addEventListener('input', updatePembelianTotal);
+
+    // Remove image helper
+    window.removePembelianImage = function() {
+        previewArea.innerHTML = `
+            <div class="upload-placeholder">
+                <i data-lucide="image-plus" class="w-12 h-12"></i>
+                <p>Belum ada foto</p>
+            </div>
+        `;
+        const fileInput = document.getElementById('pembelianImageUpload');
+        const urlInput = document.getElementById('pembelianImageUrl');
+        if (fileInput) fileInput.value = '';
+        if (urlInput) urlInput.value = '';
+        window.pembelianUploadedImage = null;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
+    // === Upload Foto Handler ===
+    const fileInput = document.getElementById('pembelianImageUpload');
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                Notification.warning('File harus berupa gambar!', { duration: 3000 });
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                Notification.warning('Ukuran gambar maksimal 2MB!', { duration: 3000 });
+                return;
+            }
+            window.pembelianUploadedImage = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                previewArea.innerHTML = `
+                    <img src="${ev.target.result}" alt="Preview" class="preview-image" />
+                    <button type="button" class="remove-image-btn" id="pembelianRemoveImageBtn">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                document.getElementById('pembelianRemoveImageBtn')?.addEventListener('click', removePembelianImage);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // === URL Toggle ===
+    const urlToggleBtn = document.getElementById('pembelianUrlToggleBtn');
+    const urlInputContainer = document.getElementById('pembelianImageUrlInput');
+    const urlInput = document.getElementById('pembelianImageUrl');
+    const applyUrlBtn = document.getElementById('pembelianApplyUrlBtn');
+    
+    if (urlToggleBtn) {
+        urlToggleBtn.addEventListener('click', () => {
+            if (urlInputContainer.style.display === 'none') {
+                urlInputContainer.style.display = 'flex';
+                urlInput.focus();
+            } else {
+                urlInputContainer.style.display = 'none';
+            }
+        });
+    }
+    if (applyUrlBtn) {
+        applyUrlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (!url) { Notification.warning('Masukkan URL gambar!', { duration: 3000 }); return; }
+            if (!url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
+                Notification.warning('URL harus berakhiran .jpg, .png, .gif, .webp, atau .svg', { duration: 3000 });
+                return;
+            }
+            window.pembelianUploadedImage = url;
+            previewArea.innerHTML = `
+                <img src="${url}" alt="Preview" class="preview-image" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/><text fill=%22%23999%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22>Gambar Tidak Valid</text></svg>'" />
+                <button type="button" class="remove-image-btn" id="pembelianRemoveImageBtn">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            `;
+            urlInputContainer.style.display = 'none';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            document.getElementById('pembelianRemoveImageBtn')?.addEventListener('click', removePembelianImage);
+            Notification.success('URL gambar berhasil diterapkan', { duration: 2000 });
+        });
+    }
+
+    // === Camera Handlers ===
+    setupPembelianCameraHandlers();
+
+    // === Modal Controls ===
     document.getElementById('pembelianModalClose').addEventListener('click', closePembelianModal);
     document.getElementById('pembelianCancelBtn').addEventListener('click', closePembelianModal);
     document.getElementById('pembelianModalOverlay').addEventListener('click', (e) => {
@@ -3689,50 +3879,211 @@ function openPembelianModal() {
         if (e.key === 'Escape') { closePembelianModal(); document.removeEventListener('keydown', escHandler); }
     };
     document.addEventListener('keydown', escHandler);
+
+    // Focus ke field kode barang
+    setTimeout(() => document.getElementById('pembelianKode')?.focus(), 200);
+}
+
+// === Camera Handlers khusus Pembelian ===
+function setupPembelianCameraHandlers() {
+    const cameraBtn = document.getElementById('pembelianCameraBtn');
+    const cameraModal = document.getElementById('pembelianCameraModalOverlay');
+    const cameraCloseBtn = document.getElementById('pembelianCameraCloseBtn');
+    const cameraVideo = document.getElementById('pembelianCameraVideo');
+    const cameraCanvas = document.getElementById('pembelianCameraCanvas');
+    const cameraCaptureBtn = document.getElementById('pembelianCameraCaptureBtn');
+    const cameraRetakeBtn = document.getElementById('pembelianCameraRetakeBtn');
+    const cameraSaveBtn = document.getElementById('pembelianCameraSaveBtn');
+    const cameraCancelBtn = document.getElementById('pembelianCameraCancelBtn');
+    let stream = null;
+    let capturedImage = null;
+
+    const closeCamera = () => {
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        cameraModal.style.display = 'none';
+        capturedImage = null;
+    };
+
+    if (cameraBtn) {
+        cameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
+                });
+                cameraVideo.srcObject = stream;
+                cameraModal.style.display = 'flex';
+                capturedImage = null;
+                cameraVideo.style.display = 'block';
+                cameraCanvas.style.display = 'none';
+                cameraCaptureBtn.style.display = 'flex';
+                cameraRetakeBtn.style.display = 'none';
+                cameraSaveBtn.style.display = 'none';
+            } catch (err) {
+                Notification.error('Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan.', { duration: 5000 });
+            }
+        });
+    }
+    if (cameraCloseBtn) cameraCloseBtn.addEventListener('click', closeCamera);
+    if (cameraCancelBtn) cameraCancelBtn.addEventListener('click', closeCamera);
+    if (cameraCaptureBtn) {
+        cameraCaptureBtn.addEventListener('click', () => {
+            if (!stream) return;
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            const ctx = cameraCanvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0);
+            capturedImage = cameraCanvas.toDataURL('image/jpeg', 0.85);
+            cameraVideo.style.display = 'none';
+            cameraCanvas.style.display = 'block';
+            cameraCaptureBtn.style.display = 'none';
+            cameraRetakeBtn.style.display = 'flex';
+            cameraSaveBtn.style.display = 'flex';
+        });
+    }
+    if (cameraRetakeBtn) {
+        cameraRetakeBtn.addEventListener('click', () => {
+            capturedImage = null;
+            cameraVideo.style.display = 'block';
+            cameraCanvas.style.display = 'none';
+            cameraCaptureBtn.style.display = 'flex';
+            cameraRetakeBtn.style.display = 'none';
+            cameraSaveBtn.style.display = 'none';
+        });
+    }
+    if (cameraSaveBtn) {
+        cameraSaveBtn.addEventListener('click', () => {
+            if (!capturedImage) return;
+            window.pembelianUploadedImage = capturedImage;
+            const previewArea = document.getElementById('pembelianImagePreviewArea');
+            previewArea.innerHTML = `
+                <img src="${capturedImage}" alt="Preview" class="preview-image" />
+                <button type="button" class="remove-image-btn" id="pembelianRemoveImageBtn">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            `;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            document.getElementById('pembelianRemoveImageBtn')?.addEventListener('click', removePembelianImage);
+            closeCamera();
+            Notification.success('Foto berhasil diambil!', { duration: 2000 });
+        });
+    }
+    if (cameraModal) {
+        cameraModal.addEventListener('click', (e) => { if (e.target === cameraModal) closeCamera(); });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && cameraModal.style.display === 'flex') closeCamera();
+    });
 }
 
 function closePembelianModal() {
     const overlay = document.getElementById('pembelianModalOverlay');
+    const cameraModal = document.getElementById('pembelianCameraModalOverlay');
     if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+    if (cameraModal) setTimeout(() => cameraModal.remove(), 300);
+    window.pembelianUploadedImage = null;
 }
 
-function savePembelian() {
+async function savePembelian() {
     const tanggal = document.getElementById('pembelianTanggal').value;
+    const kode = document.getElementById('pembelianKode').value.trim().toUpperCase();
+    const namaBarang = document.getElementById('pembelianNamaBarang').value.trim();
+    const kategori = document.getElementById('pembelianKategori').value;
     const supplier = document.getElementById('pembelianSupplier').value.trim();
-    const barangId = parseInt(document.getElementById('pembelianBarang').value);
+    const hargaBeli = parseInt(document.getElementById('pembelianHargaBeli').value);
+    const hargaJual = parseInt(document.getElementById('pembelianHargaJual').value);
     const jumlah = parseInt(document.getElementById('pembelianJumlah').value);
-    const harga = parseInt(document.getElementById('pembelianHarga').value);
     const keterangan = document.getElementById('pembelianKeterangan').value.trim();
 
-    if (!tanggal || !supplier || !barangId || !jumlah || !harga) {
-        Notification.warning('Semua field wajib diisi!', { duration: 3000 });
-        return;
+    // === VALIDASI ===
+    if (!tanggal) { Notification.warning('Tanggal pembelian wajib diisi!', { duration: 3000 }); return; }
+    if (!kode) { Notification.warning('Kode barang wajib diisi!', { duration: 3000 }); return; }
+    if (!namaBarang) { Notification.warning('Nama barang wajib diisi!', { duration: 3000 }); return; }
+    if (!kategori) { Notification.warning('Kategori wajib dipilih!', { duration: 3000 }); return; }
+    if (!jumlah || jumlah <= 0) { Notification.warning('Jumlah beli harus lebih dari 0!', { duration: 3000 }); return; }
+    if (!hargaBeli || hargaBeli <= 0) { Notification.warning('Harga beli harus lebih dari 0!', { duration: 3000 }); return; }
+    if (!hargaJual || hargaJual <= 0) { Notification.warning('Harga jual harus lebih dari 0!', { duration: 3000 }); return; }
+    
+    if (hargaJual < hargaBeli) {
+        if (!await CustomConfirm.show('Harga jual lebih kecil dari harga beli. Lanjutkan?', {
+            type: 'warning', confirmText: 'Lanjutkan', cancelText: 'Batal'
+        })) return;
     }
 
-    const product = mockProducts.find(p => p.id === barangId);
-    if (!product) return;
+    // === PROSES UPLOAD FOTO ===
+    let imageData = '';
+    if (window.pembelianUploadedImage) {
+        if (window.pembelianUploadedImage instanceof File) {
+            imageData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(window.pembelianUploadedImage);
+            });
+        } else if (typeof window.pembelianUploadedImage === 'string') {
+            imageData = window.pembelianUploadedImage;
+        }
+    }
 
-    const total = jumlah * harga;
+    const total = jumlah * hargaBeli;
     const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
 
-    // 1. Tambahkan ke Kas Harian (Pengeluaran)
+    // === CEK APAKAH BARANG SUDAH ADA DI MASTER DATA ===
+    const existingProduct = mockProducts.find(p => p.kode.toLowerCase() === kode.toLowerCase());
+    let isNewProduct = false;
+
+    if (existingProduct) {
+        // ✅ BARANG SUDAH ADA → Update stok, harga, dan foto
+        existingProduct.stok = (existingProduct.stok || 0) + jumlah;
+        existingProduct.hargaBeli = hargaBeli;
+        existingProduct.harga = hargaJual;
+        if (imageData) existingProduct.image = imageData;
+        if (supplier) existingProduct.supplier = supplier;
+    } else {
+        // ✅ BARANG BARU → Tambahkan ke Master Data
+        isNewProduct = true;
+        const newId = mockProducts.length > 0 ? Math.max(...mockProducts.map(p => p.id)) + 1 : 1;
+        mockProducts.push({
+            id: newId,
+            kode: kode,
+            nama: namaBarang,
+            kategori: kategori,
+            tanggal: tanggal,
+            hargaBeli: hargaBeli,
+            harga: hargaJual,
+            stok: jumlah,
+            image: imageData,
+            supplier: supplier || '-',
+            kontak: ''
+        });
+    }
+
+    // === TAMBAHKAN KE KAS HARIAN (PENGELUARAN) ===
     const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
+    const uraianPembelian = `PEMBELIAN ${namaBarang}${keterangan ? ' - ' + keterangan : ''}`;
+    
     mockKasHarian.push({
-        id: kasId, tanggal: tanggalFormatted, bukti: '',
-        uraian: `PEMBELIAN ${product.nama}${keterangan ? ' - ' + keterangan : ''}`,
+        id: kasId,
+        tanggal: tanggalFormatted,
+        bukti: `PB-${String(kasId).padStart(3, '0')}`,
+        uraian: uraianPembelian,
         inJml: '', inHrg: '', inTot: '',
-        outJml: jumlah, outHrg: harga, outTot: total,
-        biaya: '', saldo: 0 // Saldo akan dihitung ulang otomatis oleh renderTabKasHarian
+        outJml: jumlah, outHrg: hargaBeli, outTot: total,
+        biaya: '', saldo: 0
     });
 
-    // 2. Tambahkan stok barang di Master Data
-    product.stok += jumlah;
-
-    Notification.success(`Pembelian ${product.nama} sebanyak ${jumlah} berhasil dicatat!`, { duration: 3000 });
+    // === NOTIFIKASI SUKSES ===
+    const pesanSukses = isNewProduct 
+        ? `✅ Barang baru "${namaBarang}" ditambahkan ke Master Data & stok ${jumlah} unit tercatat!`
+        : `✅ Pembelian ${namaBarang} (${jumlah} unit) berhasil! Stok diupdate otomatis.`;
+    
+    Notification.success(pesanSukses, { duration: 4000 });
+    
     closePembelianModal();
     
+    // Refresh tampilan
     if (activeTab === 'kas') switchTab('kas');
     if (activeTab === 'master') refreshMasterData();
+    if (activeTab === 'stok') refreshStokView();
 }
 
 // --- MODAL BIAYA TAMBAHAN ---
