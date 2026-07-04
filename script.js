@@ -4026,63 +4026,77 @@ function generateStokHistory(product) {
 
 function renderTabRekap() {
   return `
-    <div class="space-y-4 pb-20 animate-tab">
-      <!-- Header Laporan -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-        <h2 class="text-lg font-bold text-slate-800 truncate">Rekap Laporan Keuangan</h2>
-        <p class="text-xs text-slate-500">Tahun 2026</p>
-      </div>
-
-      <!-- Tabel Data (UKURAN DIPERKECIL - SAMA DENGAN PENJUALAN) -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
-            <thead class="text-[10px] text-white uppercase tracking-wide">
-              <tr>
-                <th colspan="4" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600 text-base font-bold">PENERIMAAN</th>
-                <th colspan="4" class="px-2 py-1.5 bg-rose-600 text-base font-bold">PENGELUARAN</th>
-              </tr>
-              <tr class="bg-slate-100 text-slate-700">
-                <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
-                <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
-                <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 text-right">Jumlah</th>
-                <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
-                <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
-                <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
-                <th class="px-2 py-1.5 text-right">Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${mockRekap.map((item, index) => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnIn ? index + 1 : ''}</td>
-                  <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnIn}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianIn}</td>
-                  <td class="px-2 py-1.5 text-right text-teal-600 font-medium border-r border-teal-500">${formatRp(item.jmlIn)}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnOut ? index + 5 : ''}</td>
-                  <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnOut}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianOut}</td>
-                  <td class="px-2 py-1.5 text-right text-rose-600 font-medium">${formatRp(item.jmlOut)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-            <tfoot class="bg-teal-50 font-bold">
-              <tr>
-                <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENERIMAAN</td>
-                <td class="px-2 py-1.5 text-right text-teal-700 border-r border-teal-500">${formatRp(633000)}</td>
-                <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENGELUARAN</td>
-                <td class="px-2 py-1.5 text-right text-rose-700">${formatRp(620400)}</td>
-              </tr>
-              <tr>
-                <td colspan="7" class="px-2 py-1.5 text-right border-r border-slate-200 bg-slate-100">KEUNTUNGAN BERSIH</td>
-                <td class="px-2 py-1.5 text-right font-bold text-teal-700 bg-slate-100">${formatRp(12600)}</td>
-              </tr>
-            </tfoot>
-          </table>
+  <div class="space-y-4 pb-20 animate-tab">
+    <!-- Header Laporan (Rata Kiri + Tombol Print) -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+      <div class="flex flex-row justify-between items-center gap-3">
+        <!-- Bagian Kiri: Judul & Subjudul (Rata Kiri) -->
+        <div class="min-w-0 flex-1 text-left">
+          <h2 class="text-lg font-bold text-slate-800 truncate">Rekap Laporan Keuangan</h2>
+          <p class="text-xs text-slate-500">Tahun 2026</p>
         </div>
+        
+        <!-- Bagian Kanan: Tombol Print -->
+        <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
+          <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+            <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
+          </div>
+          <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
+        </button>
       </div>
     </div>
+
+    <!-- Tabel Data (Ukuran Font Disamakan dengan Penjualan) -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+          <thead class="text-[10px] text-white uppercase tracking-wide">
+            <tr>
+              <!-- ✅ PERBAIKAN: Menghapus 'text-base' agar font mewarisi 'text-[10px]' dari thead, sama seperti halaman Penjualan -->
+              <th colspan="4" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600 font-bold">PENERIMAAN</th>
+              <th colspan="4" class="px-2 py-1.5 bg-rose-600 font-bold">PENGELUARAN</th>
+            </tr>
+            <tr class="bg-slate-100 text-slate-700">
+              <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
+              <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
+              <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
+              <th class="px-2 py-1.5 border-r border-teal-500 text-right">Jumlah</th>
+              <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
+              <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
+              <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
+              <th class="px-2 py-1.5 text-right">Jumlah</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mockRekap.map((item, index) => `
+              <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnIn ? index + 1 : ''}</td>
+                <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnIn}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianIn}</td>
+                <td class="px-2 py-1.5 text-right text-teal-600 font-medium border-r border-teal-500">${formatRp(item.jmlIn)}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnOut ? index + 5 : ''}</td>
+                <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnOut}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianOut}</td>
+                <td class="px-2 py-1.5 text-right text-rose-600 font-medium">${formatRp(item.jmlOut)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot class="bg-teal-50 font-bold">
+            <tr>
+              <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENERIMAAN</td>
+              <td class="px-2 py-1.5 text-right text-teal-700 border-r border-teal-500">${formatRp(633000)}</td>
+              <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENGELUARAN</td>
+              <td class="px-2 py-1.5 text-right text-rose-700">${formatRp(620400)}</td>
+            </tr>
+            <tr>
+              <td colspan="7" class="px-2 py-1.5 text-right border-r border-slate-200 bg-slate-100">KEUNTUNGAN BERSIH</td>
+              <td class="px-2 py-1.5 text-right font-bold text-teal-700 bg-slate-100">${formatRp(12600)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
   `;
 }
 
