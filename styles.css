@@ -4486,9 +4486,10 @@ tbody tr:hover {
   }
   
   .stok-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: row; /* Tetap sejajar (row) */
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap; /* Mencegah overflow/tumpang tindih di layar sangat kecil */
   }
   
   .stok-card-icon {
