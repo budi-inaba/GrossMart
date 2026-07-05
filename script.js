@@ -2029,8 +2029,8 @@ function renderTabMasterData() {
 <th>Nama Barang</th>
 <th>Kategori</th>
 <th>Tanggal Masuk</th> <!-- KOLOM BARU -->
-<th style="text-align: right;">Harga Beli</th>
-<th style="text-align: right;">Harga Jual</th>
+<th>Harga Beli</th>
+<th>Harga Jual</th>
 <th style="text-align: center;">Stok</th>
 <th style="text-align: center; width: 100px;">Aksi</th>
 </tr>
@@ -2049,9 +2049,9 @@ ${p.image
 <td style="font-weight: 600;">${p.nama}</td>
 <td><span class="category-badge">${p.kategori}</span></td>
 <td><span class="date-badge">${p.tanggal || '-'}</span></td> <!-- DATA TANGGAL -->
-<td style="text-align: right; color: #64748b;">${formatRp(p.hargaBeli)}</td>
-<td style="text-align: right; font-weight: 700; color: #0d9488;">${formatRp(p.harga)}</td>
-<td style="text-align: center;">
+<td style="color: #64748b;">${formatRp(p.hargaBeli)}</td>
+<td style="font-weight: 700; color: #0d9488;">${formatRp(p.harga)}</td>
+<td>
 ${(p.stok || 0) < 10
 ? `<span class="stock-low">${p.stok || 0}</span>`
 : `<span class="stock-ok">${p.stok || 0}</span>`
@@ -3358,7 +3358,8 @@ function renderTabPenjualan() {
         <div class="flex flex-row justify-between items-center gap-3">
           <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
-            <p class="text-xs text-slate-500">Bulan: Januari 2026</p>
+            <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
+            <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
           </div>
           <button
             class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
@@ -3447,7 +3448,8 @@ function renderTabKasHarian() {
         <div class="flex flex-row justify-between items-center gap-3">
         <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
-            <p class="text-xs text-slate-500">Bulan: Januari 2025</p>
+            <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
+            <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
         </div>
         <!-- ✅ WRAPPER UNTUK MENAMPUNG TOMBOL -->
         <div class="flex gap-2 items-center">
@@ -3611,10 +3613,13 @@ function setupKasHarianListeners() {
 }
 
 // ========================================
-// MODAL PEMBELIAN BARANG (FULL MANUAL INPUT)
+// MODAL PEMBELIAN BARANG (Tanggal Auto + Manual)
 // ========================================
 function openPembelianModal() {
     document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
+    
+    // ✅ Format tanggal hari ini untuk input type="date" (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
     
     const modalHtml = `
     <div class="md-modal-overlay active" id="pembelianModalOverlay">
@@ -3629,7 +3634,8 @@ function openPembelianModal() {
                         <!-- Baris 1: Tanggal & Kode Barang -->
                         <div class="md-form-group">
                             <label>Tanggal Pembelian <span class="required">*</span></label>
-                            <input type="date" id="pembelianTanggal" value="${new Date().toISOString().split('T')[0]}" required />
+                            <input type="date" id="pembelianTanggal" value="${today}" required />
+                            <small style="color:#64748b; font-size:0.7rem; margin-top:2px;">Klik untuk memilih tanggal lain</small>
                         </div>
                         <div class="md-form-group">
                             <label>Kode Barang <span class="required">*</span></label>
@@ -3695,9 +3701,9 @@ function openPembelianModal() {
                                 </div>
                                 <div class="image-upload-options">
                                     <label class="upload-btn camera-btn" for="pembelianImageUpload">
-                                          <i data-lucide="upload" class="w-4 h-4"></i>
-                                          <span>Upload Foto</span>
-                                          <input type="file" id="pembelianImageUpload" accept="image/*" style="display: none;" />
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <span>Upload Foto</span>
+                                        <input type="file" id="pembelianImageUpload" accept="image/*" style="display: none;" />
                                     </label>
                                     <button type="button" class="upload-btn camera-btn" id="pembelianCameraBtn">
                                         <i data-lucide="camera" class="w-4 h-4"></i>
@@ -3771,7 +3777,7 @@ function openPembelianModal() {
     const totalDisplay = document.getElementById('pembelianTotalDisplay');
     const previewArea = document.getElementById('pembelianImagePreviewArea');
 
-    // Auto-calculate total saat jumlah atau harga beli berubah
+    // Auto-calculate total
     const updatePembelianTotal = () => {
         const jumlah = parseInt(inputJumlah.value) || 0;
         const harga = parseInt(inputHargaBeli.value) || 0;
@@ -3796,7 +3802,7 @@ function openPembelianModal() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     };
 
-    // === Upload Foto Handler ===
+    // === Upload File Handler ===
     const fileInput = document.getElementById('pembelianImageUpload');
     if (fileInput) {
         fileInput.addEventListener('change', (e) => {
@@ -3884,7 +3890,140 @@ function openPembelianModal() {
     setTimeout(() => document.getElementById('pembelianKode')?.focus(), 200);
 }
 
-// === Camera Handlers khusus Pembelian ===
+// ========================================
+// MODAL BIAYA TAMBAHAN (Tanggal Auto + Manual)
+// ========================================
+function openBiayaTambahanModal() {
+    document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
+    
+    // ✅ Format tanggal hari ini untuk input type="date" (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    const modalHtml = `
+    <div class="md-modal-overlay active" id="biayaModalOverlay">
+        <div class="md-modal">
+            <div class="md-modal-header" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                <h3><i data-lucide="receipt"></i> Biaya Tambahan</h3>
+                <button class="md-modal-close" id="biayaModalClose"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="md-modal-body">
+                <form id="biayaForm">
+                    <div class="md-form-grid">
+                        <!-- Baris 1: Tanggal & Kategori -->
+                        <div class="md-form-group">
+                            <label>Tanggal <span class="required">*</span></label>
+                            <input type="date" id="biayaTanggal" value="${today}" required />
+                            <small style="color:#64748b; font-size:0.7rem; margin-top:2px;">Klik untuk memilih tanggal lain</small>
+                        </div>
+                        <div class="md-form-group">
+                            <label>Kategori Biaya <span class="required">*</span></label>
+                            <select id="biayaKategori" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="Operasional">Operasional</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Listrik & Air">Listrik & Air</option>
+                                <option value="Internet & Telepon">Internet & Telepon</option>
+                                <option value="Gaji & Upah">Gaji & Upah</option>
+                                <option value="Sewa">Sewa</option>
+                                <option value="Perawatan">Perawatan</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <!-- Baris 2: Uraian (Full Width) -->
+                        <div class="md-form-group full">
+                            <label>Uraian / Keterangan <span class="required">*</span></label>
+                            <input type="text" id="biayaUraian" placeholder="Contoh: Biaya kebersihan, Transport beli barang, dll" required />
+                        </div>
+
+                        <!-- Baris 3: Jumlah Biaya (Full Width) -->
+                        <div class="md-form-group full">
+                            <label>Jumlah Biaya (Rp) <span class="required">*</span></label>
+                            <input type="number" id="biayaJumlah" placeholder="0" min="0" required />
+                        </div>
+
+                        <!-- Baris 4: Catatan Tambahan (Full Width) -->
+                        <div class="md-form-group full">
+                            <label>Catatan Tambahan</label>
+                            <textarea id="biayaCatatan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="md-modal-footer">
+                <button class="md-btn md-btn-cancel" id="biayaCancelBtn">Batal</button>
+                <button class="md-btn md-btn-save" id="biayaSaveBtn" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                    <i data-lucide="save" class="w-4 h-4"></i> Simpan Biaya
+                </button>
+            </div>
+        </div>
+    </div>`;
+    
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = modalHtml;
+    document.body.appendChild(wrapper.firstElementChild);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // === Modal Controls ===
+    document.getElementById('biayaModalClose').addEventListener('click', closeBiayaModal);
+    document.getElementById('biayaCancelBtn').addEventListener('click', closeBiayaModal);
+    document.getElementById('biayaModalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'biayaModalOverlay') closeBiayaModal();
+    });
+    document.getElementById('biayaSaveBtn').addEventListener('click', saveBiayaTambahan);
+
+    const escHandler = (e) => {
+        if (e.key === 'Escape') { closeBiayaModal(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Focus ke field uraian
+    setTimeout(() => document.getElementById('biayaUraian')?.focus(), 200);
+}
+
+function closeBiayaModal() {
+    const overlay = document.getElementById('biayaModalOverlay');
+    if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+function saveBiayaTambahan() {
+    const tanggal = document.getElementById('biayaTanggal').value;
+    const kategori = document.getElementById('biayaKategori').value;
+    const uraian = document.getElementById('biayaUraian').value.trim();
+    const jumlah = parseInt(document.getElementById('biayaJumlah').value);
+    const catatan = document.getElementById('biayaCatatan').value.trim();
+
+    // Validasi
+    if (!tanggal) { Notification.warning('Tanggal wajib diisi!', { duration: 3000 }); return; }
+    if (!kategori) { Notification.warning('Kategori biaya wajib dipilih!', { duration: 3000 }); return; }
+    if (!uraian) { Notification.warning('Uraian biaya wajib diisi!', { duration: 3000 }); return; }
+    if (!jumlah || jumlah <= 0) { Notification.warning('Jumlah biaya harus lebih dari 0!', { duration: 3000 }); return; }
+
+    const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+
+    // Tambahkan ke Kas Harian (Biaya)
+    const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
+    const uraianLengkap = `${kategori.toUpperCase()} - ${uraian}${catatan ? ' (' + catatan + ')' : ''}`;
+    
+    mockKasHarian.push({
+        id: kasId, 
+        tanggal: tanggalFormatted, 
+        bukti: `BB-${String(kasId).padStart(3, '0')}`,
+        uraian: uraianLengkap,
+        inJml: '', inHrg: '', inTot: '',
+        outJml: '', outHrg: '', outTot: '',
+        biaya: jumlah, saldo: 0
+    });
+
+    Notification.success(`Biaya "${uraian}" sebesar ${formatRp(jumlah)} berhasil dicatat!`, { duration: 3000 });
+    closeBiayaModal();
+    
+    if (activeTab === 'kas') switchTab('kas');
+}
+
+// ========================================
+// CAMERA HANDLERS (Pembelian)
+// ========================================
 function setupPembelianCameraHandlers() {
     const cameraBtn = document.getElementById('pembelianCameraBtn');
     const cameraModal = document.getElementById('pembelianCameraModalOverlay');
@@ -4086,102 +4225,6 @@ async function savePembelian() {
     if (activeTab === 'stok') refreshStokView();
 }
 
-// --- MODAL BIAYA TAMBAHAN ---
-function openBiayaTambahanModal() {
-    document.getElementById('dropdownMenuTambahKas')?.classList.add('hidden');
-    const modalHtml = `
-    <div class="md-modal-overlay active" id="biayaModalOverlay">
-        <div class="md-modal">
-            <div class="md-modal-header" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
-                <h3><i data-lucide="receipt"></i> Biaya Tambahan</h3>
-                <button class="md-modal-close" id="biayaModalClose"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div class="md-modal-body">
-                <form id="biayaForm">
-                    <div class="md-form-grid">
-                        <div class="md-form-group">
-                            <label>Tanggal <span class="required">*</span></label>
-                            <input type="date" id="biayaTanggal" value="${new Date().toISOString().split('T')[0]}" required />
-                        </div>
-                        <div class="md-form-group">
-                            <label>Kategori Biaya</label>
-                            <select id="biayaKategori">
-                                <option value="Operasional">Operasional</option>
-                                <option value="Transport">Transport</option>
-                                <option value="Listrik & Air">Listrik & Air</option>
-                                <option value="Lainnya">Lainnya</option>
-                            </select>
-                        </div>
-                        <div class="md-form-group full">
-                            <label>Uraian / Keterangan <span class="required">*</span></label>
-                            <input type="text" id="biayaUraian" placeholder="Contoh: Biaya kebersihan, Transport beli barang" required />
-                        </div>
-                        <div class="md-form-group full">
-                            <label>Jumlah Biaya (Rp) <span class="required">*</span></label>
-                            <input type="number" id="biayaJumlah" placeholder="0" min="0" required />
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="md-modal-footer">
-                <button class="md-btn md-btn-cancel" id="biayaCancelBtn">Batal</button>
-                <button class="md-btn md-btn-save" id="biayaSaveBtn" style="background: linear-gradient(135deg, #d97706, #f59e0b);"><i data-lucide="save" class="w-4 h-4"></i> Simpan Biaya</button>
-            </div>
-        </div>
-    </div>`;
-    
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = modalHtml;
-    document.body.appendChild(wrapper.firstElementChild);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    document.getElementById('biayaModalClose').addEventListener('click', closeBiayaModal);
-    document.getElementById('biayaCancelBtn').addEventListener('click', closeBiayaModal);
-    document.getElementById('biayaModalOverlay').addEventListener('click', (e) => {
-        if (e.target.id === 'biayaModalOverlay') closeBiayaModal();
-    });
-    document.getElementById('biayaSaveBtn').addEventListener('click', saveBiayaTambahan);
-
-    const escHandler = (e) => {
-        if (e.key === 'Escape') { closeBiayaModal(); document.removeEventListener('keydown', escHandler); }
-    };
-    document.addEventListener('keydown', escHandler);
-}
-
-function closeBiayaModal() {
-    const overlay = document.getElementById('biayaModalOverlay');
-    if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
-}
-
-function saveBiayaTambahan() {
-    const tanggal = document.getElementById('biayaTanggal').value;
-    const kategori = document.getElementById('biayaKategori').value;
-    const uraian = document.getElementById('biayaUraian').value.trim();
-    const jumlah = parseInt(document.getElementById('biayaJumlah').value);
-
-    if (!tanggal || !uraian || !jumlah) {
-        Notification.warning('Semua field wajib diisi!', { duration: 3000 });
-        return;
-    }
-
-    const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-
-    // Tambahkan ke Kas Harian (Biaya)
-    const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
-    mockKasHarian.push({
-        id: kasId, tanggal: tanggalFormatted, bukti: '',
-        uraian: `${kategori.toUpperCase()} - ${uraian}`,
-        inJml: '', inHrg: '', inTot: '',
-        outJml: '', outHrg: '', outTot: '',
-        biaya: jumlah, saldo: 0 // Saldo akan dihitung ulang otomatis
-    });
-
-    Notification.success(`Biaya "${uraian}" sebesar ${formatRp(jumlah)} berhasil dicatat!`, { duration: 3000 });
-    closeBiayaModal();
-    
-    if (activeTab === 'kas') switchTab('kas');
-}
-
 function renderTabStok() {
   const selectedProduct = mockProducts.find(p => p.id === kartuStokState.selectedProductId);
   const riwayatStok = generateStokHistory(selectedProduct);
@@ -4200,6 +4243,7 @@ function renderTabStok() {
           <div class="stok-card-title min-w-0">
             <h2>Kartu Stok Barang</h2>
             <p>Pantau pergerakan stok barang secara detail</p>
+            <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
           </div>
         </div>
         
@@ -4439,6 +4483,7 @@ function renderTabRekap() {
         <div class="min-w-0 flex-1 text-left">
           <h2 class="text-lg font-bold text-slate-800 truncate">Rekap Laporan Keuangan</h2>
           <p class="text-xs text-slate-500">Tahun 2026</p>
+          <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
         </div>
         
         <!-- Bagian Kanan: Tombol Print -->
