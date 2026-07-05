@@ -69,9 +69,14 @@ const SalesAPI = {
     const res = await apiCall('getSales', null, 'GET');
     return res.success ? res.data : [];
   },
-  
   async save(sale) {
     return await apiCall('saveSale', { data: sale });
+  },
+  async update(sale) {
+    return await apiCall('updateSale', { data: sale });
+  },
+  async delete(id) {
+    return await apiCall('deleteSale', { id });
   }
 };
 
@@ -83,9 +88,14 @@ const CashflowAPI = {
     const res = await apiCall('getCashflow', null, 'GET');
     return res.success ? res.data : [];
   },
-  
   async save(cashflow) {
     return await apiCall('saveCashflow', { data: cashflow });
+  },
+  async update(cashflow) {
+    return await apiCall('updateCashflow', { data: cashflow });
+  },
+  async delete(id) {
+    return await apiCall('deleteCashflow', { id });
   }
 };
 
@@ -97,9 +107,14 @@ const RekapAPI = {
     const res = await apiCall('getRekap', null, 'GET');
     return res.success ? res.data : [];
   },
-  
   async save(rekapData) {
     return await apiCall('saveRekap', { data: rekapData });
+  },
+  async update(rekapData) {
+    return await apiCall('updateRekap', { data: rekapData });
+  },
+  async delete(id) {
+    return await apiCall('deleteRekap', { id });
   }
 };
 
