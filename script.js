@@ -3121,6 +3121,31 @@ const formatRp = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 };
 
+ function parseIndoDate(dateStr) {
+  if (!dateStr) return '';
+  const months = { 'JANUARI': '01', 'FEBRUARI': '02', 'MARET': '03', 'APRIL': '04', 'MEI': '05', 'JUNI': '06', 'JULI': '07', 'AGUSTUS': '08', 'SEPTEMBER': '09', 'OKTOBER': '10', 'NOVEMBER': '11', 'DESEMBER': '12' };
+  const parts = dateStr.split(' ');
+  if (parts.length === 3) {
+    const d = parts[0].padStart(2, '0');
+    const m = months[parts[1].toUpperCase()] || '01';
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
+  }
+  return '';
+}
+
+function parseIndoDateToTimestamp(dateStr) {
+  const months = { 'JANUARI': 0, 'FEBRUARI': 1, 'MARET': 2, 'APRIL': 3, 'MEI': 4, 'JUNI': 5, 'JULI': 6, 'AGUSTUS': 7, 'SEPTEMBER': 8, 'OKTOBER': 9, 'NOVEMBER': 10, 'DESEMBER': 11 };
+  const parts = dateStr.split(' ');
+  if (parts.length === 3) {
+    const d = parseInt(parts[0]);
+    const m = months[parts[1].toUpperCase()];
+    const y = parseInt(parts[2]);
+    if (!isNaN(d) && m !== undefined && !isNaN(y)) return new Date(y, m, d).getTime();
+  }
+  return 0;
+}
+
 let activeTab = 'penjualan';
 function getTabs() {
   const baseTabs = [
@@ -3395,231 +3420,238 @@ function getGreeting() {
 
 function renderTabPenjualan() {
   return `
-    <div class="space-y-4 pb-20 animate-tab">
-      <!-- Header Laporan -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div class="flex flex-row justify-between items-center gap-3">
-          <div class="min-w-0 flex-1">
-            <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
-            <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
-            <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
+  <div class="space-y-4 pb-20 animate-tab">
+    <!-- Header Laporan -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+      <div class="flex flex-row justify-between items-center gap-3">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-lg font-bold text-slate-800 truncate">Laporan Penjualan</h2>
+          <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
+          <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
+        </div>
+        <button
+          class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
+          w-11 h-11 rounded-full p-0
+          sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2"
+          id="btnTambahTransaksi">
+          <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
+          sm:w-7 sm:h-7 sm:rounded-md">
+            <img src="asset/trolley_plus.png" alt="Icon" class="w-7 h-7 object-contain sm:w-4 sm:h-4" />
           </div>
-          <button
-            class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0
-              w-11 h-11 rounded-full p-0
-              sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2"
-              id="btnTambahTransaksi">
-            <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0
-              sm:w-7 sm:h-7 sm:rounded-md">
-              <img src="asset/trolley_plus.png" alt="Icon" class="w-7 h-7 object-contain sm:w-4 sm:h-4" />
-            </div>
-              <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Tambah Transaksi</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Tabel Data (UKURAN DIPERKECIL) -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <!-- ✅ Table: text-xs, Border tipis -->
-          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
-            <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
-              <tr>
-                <th class="px-2 py-1.5 border-r border-teal-500">No</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Tanggal</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Nama Barang</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Kode</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Jumlah</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Harga</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Total</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Harga Beli</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Total Beli</th>
-                <th class="px-2 py-1.5">Keuntungan</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${mockPenjualan.map((item, index) => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
-                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200">${item.nama}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.kode}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${item.jumlah}</td>
-                  <td class="px-2 py-1.5 border-r border-slate-200">${formatRp(item.harga)}</td>
-                  <td class="px-2 py-1.5 font-semibold border-r border-slate-200">${formatRp(item.total)}</td>
-                  <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.hargaBeli)}</td>
-                  <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.totalBeli)}</td>
-                  <td class="px-2 py-1.5 text-teal-600 font-semibold">${formatRp(item.untung)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-            <tfoot class="bg-teal-50 font-bold">
-              <tr>
-                <td colspan="6" class="px-2 py-1.5 text-right border-r border-slate-200">TOTAL</td>
-                <td class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(633000)}</td>
-                <td colspan="2" class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(578500)}</td>
-                <td class="px-2 py-1.5 text-right text-teal-700">${formatRp(54500)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+          <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Tambah Transaksi</span>
+        </button>
       </div>
     </div>
+    
+    <!-- Tabel Data -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+          <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
+            <tr>
+              <th class="px-2 py-1.5 border-r border-teal-500">No</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Tanggal</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Nama Barang</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Kode</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Jumlah</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Harga</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Total</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Harga Beli</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Total Beli</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Keuntungan</th>
+              <!-- ✅ KOLOM AKSI DITAMBAHKAN DI SINI -->
+              <th class="px-2 py-1.5 no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mockPenjualan.map((item, index) => `
+              <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
+                <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200">${item.nama}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${item.kode}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${item.jumlah}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${formatRp(item.harga)}</td>
+                <td class="px-2 py-1.5 font-semibold border-r border-slate-200">${formatRp(item.total)}</td>
+                <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.hargaBeli)}</td>
+                <td class="px-2 py-1.5 text-slate-500 border-r border-slate-200">${formatRp(item.totalBeli)}</td>
+                <td class="px-2 py-1.5 text-teal-600 font-semibold border-r border-slate-200">${formatRp(item.untung)}</td>
+                
+                <!-- ✅ TOMBOL AKSI DITAMBAHKAN DI SINI -->
+                <td class="px-2 py-1.5 no-print">
+                  <div class="action-btns">
+                    <button class="action-icon-btn edit" data-edit-sale="${item.id}" title="Edit"><i data-lucide="pencil"></i></button>
+                    <button class="action-icon-btn delete" data-delete-sale="${item.id}" title="Hapus"><i data-lucide="trash-2"></i></button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot class="bg-teal-50 font-bold">
+            <tr>
+              <td colspan="6" class="px-2 py-1.5 text-right border-r border-slate-200">TOTAL</td>
+              <td class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(633000)}</td>
+              <td colspan="2" class="px-2 py-1.5 text-right border-r border-slate-200">${formatRp(578500)}</td>
+              <td class="px-2 py-1.5 text-right text-teal-700">${formatRp(54500)}</td>
+              <!-- ✅ CELL KOSONG DI TFOOT AGAR TABEL SEIMBANG -->
+              <td class="px-2 py-1.5"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
   `;
 }
 
 function renderTabKasHarian() {
-    // Kelompokkan data berdasarkan tanggal untuk running balance
-    let runningBalance = 2200000; // Saldo awal
-    const kasDataWithBalance = mockKasHarian.map(item => {
-        if (item.inTot) runningBalance += item.inTot;
-        if (item.outTot) runningBalance -= item.outTot;
-        if (item.biaya) runningBalance -= item.biaya;
-        return { ...item, saldo: runningBalance }; // ✅ PERBAIKAN: Menampilkan saldo SETELAH transaksi
-    });
+  let runningBalance = 2200000; 
+  const kasDataWithBalance = mockKasHarian.map(item => {
+    if (item.inTot) runningBalance += item.inTot;
+    if (item.outTot) runningBalance -= item.outTot;
+    if (item.biaya) runningBalance -= item.biaya;
+    return { ...item, saldo: runningBalance };
+  });
 
-    // Hitung total
-    const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
-    const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
-    const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
-    const saldoAkhir = runningBalance;
+  const totalPenerimaan = mockKasHarian.reduce((sum, item) => sum + (item.inTot || 0), 0);
+  const totalPengeluaran = mockKasHarian.reduce((sum, item) => sum + (item.outTot || 0), 0);
+  const totalBiaya = mockKasHarian.reduce((sum, item) => sum + (item.biaya || 0), 0);
+  const saldoAkhir = runningBalance;
 
-    return `
-    <div class="space-y-4 pb-20 animate-tab">
+  return `
+  <div class="space-y-4 pb-20 animate-tab">
     <!-- Header Laporan -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div class="flex flex-row justify-between items-center gap-3">
+      <div class="flex flex-row justify-between items-center gap-3">
         <div class="min-w-0 flex-1">
-            <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
-            <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
-            <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
+          <h2 class="text-lg font-bold text-slate-800 truncate">Kas Harian</h2>
+          <p class="text-xs text-slate-500">Bulan : Januari 2026</p>
+          <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
         </div>
-        <!-- ✅ WRAPPER UNTUK MENAMPUNG TOMBOL -->
         <div class="flex gap-2 items-center">
-            
-            <!-- TOMBOL TAMBAH KAS DENGAN DROPDOWN -->
-            <div class="relative" id="wrapperTambahKas">
-                <button class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" id="btnTambahKas">
-                    <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
-                        <i data-lucide="plus-circle" class="w-7 h-7 text-teal-600 object-contain sm:w-4 sm:h-4"></i>
-                    </div>
-                    <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Tambah Kas</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4 hidden sm:inline"></i>
-                </button>
-                <!-- Dropdown Menu -->
-                <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 z-50 hidden animate-tab" id="dropdownMenuTambahKas" style="animation: fadeInZoom 0.2s ease-out forwards;">
-                    <div class="py-1">
-                        <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnPembelian">
-                            <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 group-hover:bg-teal-100 transition-colors">
-                                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm font-semibold text-slate-800">Pembelian Barang</div>
-                                <div class="text-xs text-slate-500">Catat pembelian stok barang</div>
-                            </div>
-                        </button>
-                        <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnBiayaTambahan">
-                            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
-                                <i data-lucide="receipt" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm font-semibold text-slate-800">Biaya Tambahan</div>
-                                <div class="text-xs text-slate-500">Catat biaya operasional dll</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TOMBOL PRINT -->
-            <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
-                <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
-                    <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
-                </div>
-                <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
+          <div class="relative" id="wrapperTambahKas">
+            <button class="bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" id="btnTambahKas">
+              <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+                <i data-lucide="plus-circle" class="w-7 h-7 text-teal-600 object-contain sm:w-4 sm:h-4"></i>
+              </div>
+              <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Tambah Kas</span>
+              <i data-lucide="chevron-down" class="w-4 h-4 hidden sm:inline"></i>
             </button>
+            <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 z-50 hidden animate-tab" id="dropdownMenuTambahKas" style="animation: fadeInZoom 0.2s ease-out forwards;">
+              <div class="py-1">
+                <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnPembelian">
+                  <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 group-hover:bg-teal-100 transition-colors"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
+                  <div><div class="text-sm font-semibold text-slate-800">Pembelian Barang</div><div class="text-xs text-slate-500">Catat pembelian stok barang</div></div>
+                </button>
+                <button class="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors group" id="btnBiayaTambahan">
+                  <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors"><i data-lucide="receipt" class="w-4 h-4"></i></div>
+                  <div><div class="text-sm font-semibold text-slate-800">Biaya Tambahan</div><div class="text-xs text-slate-500">Catat biaya operasional dll</div></div>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
+            <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
+              <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
+            </div>
+            <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
+          </button>
         </div>
-        </div>
+      </div>
     </div>
 
     <!-- Tabel Data -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
-                <thead class="text-[10px] text-white uppercase tracking-wide">
-                    <tr>
-                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No</th>
-                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Tanggal</th>
-                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No. Bukti</th>
-                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800 text-left">Uraian</th>
-                        <th colspan="3" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Penerimaan</th>
-                        <th colspan="3" class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Pengeluaran</th>
-                        <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Biaya</th>
-                        <th rowspan="2" class="px-2 py-1.5 bg-slate-800">Saldo</th>
-                    </tr>
-                    <tr>
-                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Jml</th>
-                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Hrg</th>
-                        <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Total</th>
-                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Jml</th>
-                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Hrg</th>
-                        <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${kasDataWithBalance.map((item, index) => `
-                    <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                        <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti || '-'}</td>
-                        <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml || '-'}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inHrg ? formatRp(item.inHrg) : '-'}</td>
-                        <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inTot ? formatRp(item.inTot) : '-'}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml || '-'}</td>
-                        <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outHrg ? formatRp(item.outHrg) : '-'}</td>
-                        <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outTot ? formatRp(item.outTot) : '-'}</td>
-                        <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${item.biaya ? formatRp(item.biaya) : '-'}</td>
-                        <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50">${formatRp(item.saldo)}</td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-                <tfoot>
-                    <tr class="bg-teal-50 font-bold border-t-2 border-teal-600">
-                        <td colspan="6" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
-                        <td class="px-2 py-2 text-right text-teal-700 border-r border-teal-500">${formatRp(totalPenerimaan)}</td>
-                        <td colspan="2" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
-                        <td class="px-2 py-2 text-right text-rose-700 border-r border-rose-500">${formatRp(totalPengeluaran)}</td>
-                        <td class="px-2 py-2 text-right text-amber-600 border-r border-slate-200">${formatRp(totalBiaya)}</td>
-                        <td class="px-2 py-2 text-right bg-slate-50">-</td>
-                    </tr>
-                    <tr class="bg-slate-100 font-bold border-t border-slate-300">
-                        <td colspan="11" class="px-2 py-2 text-right border-r border-slate-200">SALDO AKHIR</td>
-                        <td class="px-2 py-2 text-right font-bold text-teal-700 bg-teal-50 text-sm">${formatRp(saldoAkhir)}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+          <thead class="text-[10px] text-white uppercase tracking-wide">
+            <tr>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No</th>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Tanggal</th>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">No. Bukti</th>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800 text-left">Uraian</th>
+              <th colspan="3" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Penerimaan</th>
+              <th colspan="3" class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Pengeluaran</th>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Biaya</th>
+              <th rowspan="2" class="px-2 py-1.5 border-r border-slate-600 bg-slate-800">Saldo</th>
+              <!-- ✅ KOLOM AKSI DITAMBAHKAN -->
+              <th rowspan="2" class="px-2 py-1.5 bg-slate-800 no-print">Aksi</th>
+            </tr>
+            <tr>
+              <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Jml</th>
+              <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Hrg</th>
+              <th class="px-2 py-1.5 border-r border-teal-500 bg-teal-600">Total</th>
+              <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Jml</th>
+              <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Hrg</th>
+              <th class="px-2 py-1.5 border-r border-rose-500 bg-rose-600">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${kasDataWithBalance.map((item, index) => `
+              <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${item.tanggal}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200">${item.bukti || '-'}</td>
+                <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left">${item.uraian}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inJml || '-'}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inHrg ? formatRp(item.inHrg) : '-'}</td>
+                <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-teal-700 bg-teal-50/30">${item.inTot ? formatRp(item.inTot) : '-'}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outJml || '-'}</td>
+                <td class="px-2 py-1.5 border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outHrg ? formatRp(item.outHrg) : '-'}</td>
+                <td class="px-2 py-1.5 font-semibold border-r border-slate-200 text-rose-700 bg-rose-50/30">${item.outTot ? formatRp(item.outTot) : '-'}</td>
+                <td class="px-2 py-1.5 text-amber-600 border-r border-slate-200">${item.biaya ? formatRp(item.biaya) : '-'}</td>
+                <td class="px-2 py-1.5 font-bold text-slate-800 bg-slate-50 border-r border-slate-200">${formatRp(item.saldo)}</td>
+                
+                <!-- ✅ TOMBOL AKSI DITAMBAHKAN -->
+                <td class="px-2 py-1.5 no-print">
+                  <div class="action-btns">
+                    <button class="action-icon-btn edit" data-edit-kas="${item.id}" title="Edit"><i data-lucide="pencil"></i></button>
+                    <button class="action-icon-btn delete" data-delete-kas="${item.id}" title="Hapus"><i data-lucide="trash-2"></i></button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr class="bg-teal-50 font-bold border-t-2 border-teal-600">
+              <td colspan="6" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+              <td class="px-2 py-2 text-right text-teal-700 border-r border-teal-500">${formatRp(totalPenerimaan)}</td>
+              <td colspan="2" class="px-2 py-2 text-right border-r border-slate-200">SUB TOTAL</td>
+              <td class="px-2 py-2 text-right text-rose-700 border-r border-rose-500">${formatRp(totalPengeluaran)}</td>
+              <td class="px-2 py-2 text-right text-amber-600 border-r border-slate-200">${formatRp(totalBiaya)}</td>
+              <td class="px-2 py-2 text-right bg-slate-50 border-r border-slate-200">-</td>
+              <!-- ✅ CELL KOSONG DI TFOOT -->
+              <td class="px-2 py-2"></td>
+            </tr>
+            <tr class="bg-slate-100 font-bold border-t border-slate-300">
+              <!-- ✅ COLSPAN DIUBAH DARI 11 MENJADI 12 -->
+              <td colspan="12" class="px-2 py-2 text-right border-r border-slate-200">SALDO AKHIR</td>
+              <td class="px-2 py-2 text-right font-bold text-teal-700 bg-teal-50 text-sm border-r border-slate-200">${formatRp(saldoAkhir)}</td>
+              <!-- ✅ CELL KOSONG DI TFOOT -->
+              <td class="px-2 py-2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
 
-    <!-- Tanda Tangan dengan Tanggal -->
+    <!-- Tanda Tangan -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mt-4">
-        <div class="flex justify-between items-start gap-8 mt-12">
-            <div class="flex-1 text-center">
-                <p class="text-xs text-slate-600 mb-16">Mengetahui,<br>Koordinator</p>
-                <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
-            </div>
-            <div class="flex-1 text-center">
-                <p class="text-xs text-slate-600 mb-16">
-                    Jakarta, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>
-                    Pengelola GrossMart
-                </p>
-                <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
-            </div>
+      <div class="flex justify-between items-start gap-8 mt-12">
+        <div class="flex-1 text-center">
+          <p class="text-xs text-slate-600 mb-16">Mengetahui,<br>Koordinator</p>
+          <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
         </div>
+        <div class="flex-1 text-center">
+          <p class="text-xs text-slate-600 mb-16">
+            Jakarta, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>Pengelola GrossMart
+          </p>
+          <p class="text-xs font-semibold text-slate-800 border-b border-slate-300 pb-1 inline-block min-w-[150px]">( ..................... )</p>
+        </div>
+      </div>
     </div>
-    </div>
-    `;
+  </div>
+  `;
 }
 
 // Function to export to Excel
@@ -4283,29 +4315,272 @@ async function savePembelian() {
         });
 }
 
+// ========================================
+// CRUD: PENJUALAN
+// ========================================
+function openEditSaleModal(id) {
+  const item = mockPenjualan.find(p => p.id === id);
+  if (!item) return;
+  const tglValue = parseIndoDate(item.tanggal) || item.tanggal;
+
+  const modalHtml = `
+  <div class="md-modal-overlay active" id="editSaleModalOverlay">
+    <div class="md-modal">
+      <div class="md-modal-header"><h3><i data-lucide="pencil"></i> Edit Transaksi Penjualan</h3><button class="md-modal-close" id="editSaleModalClose"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+      <div class="md-modal-body">
+        <form id="editSaleForm">
+          <div class="md-form-grid">
+            <div class="md-form-group"><label>Tanggal <span class="required">*</span></label><input type="date" id="editSaleTgl" value="${tglValue}" required /></div>
+            <div class="md-form-group"><label>Kode Barang <span class="required">*</span></label><input type="text" id="editSaleKode" value="${item.kode}" required /></div>
+            <div class="md-form-group full"><label>Nama Barang <span class="required">*</span></label><input type="text" id="editSaleNama" value="${item.nama}" required /></div>
+            <div class="md-form-group"><label>Jumlah <span class="required">*</span></label><input type="number" id="editSaleJml" value="${item.jumlah}" min="1" required /></div>
+            <div class="md-form-group"><label>Harga Jual <span class="required">*</span></label><input type="number" id="editSaleHarga" value="${item.harga}" min="0" required /></div>
+            <div class="md-form-group"><label>Harga Beli <span class="required">*</span></label><input type="number" id="editSaleHargaBeli" value="${item.hargaBeli}" min="0" required /></div>
+          </div>
+        </form>
+      </div>
+      <div class="md-modal-footer">
+        <button class="md-btn md-btn-cancel" id="editSaleCancelBtn">Batal</button>
+        <button class="md-btn md-btn-save" id="editSaleSaveBtn"><i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>`;
+  
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = modalHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  document.getElementById('editSaleModalClose').addEventListener('click', closeEditSaleModal);
+  document.getElementById('editSaleCancelBtn').addEventListener('click', closeEditSaleModal);
+  document.getElementById('editSaleModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'editSaleModalOverlay') closeEditSaleModal(); });
+  document.getElementById('editSaleSaveBtn').addEventListener('click', () => saveEditSale(id));
+}
+
+function closeEditSaleModal() {
+  const overlay = document.getElementById('editSaleModalOverlay');
+  if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+async function saveEditSale(id) {
+  const tgl = document.getElementById('editSaleTgl').value;
+  const kode = document.getElementById('editSaleKode').value.trim();
+  const nama = document.getElementById('editSaleNama').value.trim();
+  const jml = parseInt(document.getElementById('editSaleJml').value);
+  const harga = parseInt(document.getElementById('editSaleHarga').value);
+  const hargaBeli = parseInt(document.getElementById('editSaleHargaBeli').value);
+
+  if (!tgl || !kode || !nama || !jml || !harga || !hargaBeli) { Notification.warning('Semua field wajib diisi!', { duration: 3000 }); return; }
+
+  const tanggalFormatted = new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+  const total = jml * harga;
+  const totalBeli = jml * hargaBeli;
+  const untung = total - totalBeli;
+
+  const idx = mockPenjualan.findIndex(p => p.id === id);
+  if (idx !== -1) {
+    mockPenjualan[idx] = { ...mockPenjualan[idx], tanggal: tanggalFormatted, kode, nama, jumlah: jml, harga, total, hargaBeli, totalBeli, untung };
+    await SalesAPI.update(mockPenjualan[idx]);
+    Notification.success('Data penjualan berhasil diupdate', { duration: 2500 });
+    closeEditSaleModal();
+    if (activeTab === 'penjualan') switchTab('penjualan');
+    if (activeTab === 'stok') refreshStokView();
+  }
+}
+
+async function deleteSale(id) {
+  const item = mockPenjualan.find(p => p.id === id);
+  if (!item) return;
+  if (!await CustomConfirm.show(`Hapus transaksi "${item.nama}"?`, { type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger' })) return;
+  
+  await SalesAPI.delete(id);
+  mockPenjualan = mockPenjualan.filter(p => p.id !== id);
+  Notification.success('Data penjualan berhasil dihapus', { duration: 2500 });
+  if (activeTab === 'penjualan') switchTab('penjualan');
+  if (activeTab === 'stok') refreshStokView();
+}
+
+// ========================================
+// CRUD: KAS HARIAN
+// ========================================
+function openEditKasModal(id) {
+  const item = mockKasHarian.find(k => k.id === id);
+  if (!item) return;
+  const tglValue = parseIndoDate(item.tanggal) || item.tanggal;
+
+  const modalHtml = `
+  <div class="md-modal-overlay active" id="editKasModalOverlay">
+    <div class="md-modal">
+      <div class="md-modal-header"><h3><i data-lucide="pencil"></i> Edit Data Kas</h3><button class="md-modal-close" id="editKasModalClose"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+      <div class="md-modal-body">
+        <form id="editKasForm">
+          <div class="md-form-grid">
+            <div class="md-form-group"><label>Tanggal <span class="required">*</span></label><input type="date" id="editKasTgl" value="${tglValue}" required /></div>
+            <div class="md-form-group full"><label>Uraian <span class="required">*</span></label><input type="text" id="editKasUraian" value="${item.uraian}" required /></div>
+            <div class="md-form-group"><label>Penerimaan (Total)</label><input type="number" id="editKasInTot" value="${item.inTot || ''}" min="0" /></div>
+            <div class="md-form-group"><label>Pengeluaran (Total)</label><input type="number" id="editKasOutTot" value="${item.outTot || ''}" min="0" /></div>
+            <div class="md-form-group"><label>Biaya</label><input type="number" id="editKasBiaya" value="${item.biaya || ''}" min="0" /></div>
+          </div>
+        </form>
+      </div>
+      <div class="md-modal-footer">
+        <button class="md-btn md-btn-cancel" id="editKasCancelBtn">Batal</button>
+        <button class="md-btn md-btn-save" id="editKasSaveBtn"><i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>`;
+  
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = modalHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  document.getElementById('editKasModalClose').addEventListener('click', closeEditKasModal);
+  document.getElementById('editKasCancelBtn').addEventListener('click', closeEditKasModal);
+  document.getElementById('editKasModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'editKasModalOverlay') closeEditKasModal(); });
+  document.getElementById('editKasSaveBtn').addEventListener('click', () => saveEditKas(id));
+}
+
+function closeEditKasModal() {
+  const overlay = document.getElementById('editKasModalOverlay');
+  if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+async function saveEditKas(id) {
+  const tgl = document.getElementById('editKasTgl').value;
+  const uraian = document.getElementById('editKasUraian').value.trim();
+  const inTot = parseInt(document.getElementById('editKasInTot').value) || '';
+  const outTot = parseInt(document.getElementById('editKasOutTot').value) || '';
+  const biaya = parseInt(document.getElementById('editKasBiaya').value) || '';
+
+  if (!tgl || !uraian) { Notification.warning('Tanggal dan Uraian wajib diisi!', { duration: 3000 }); return; }
+
+  const tanggalFormatted = new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+
+  const idx = mockKasHarian.findIndex(k => k.id === id);
+  if (idx !== -1) {
+    mockKasHarian[idx] = { ...mockKasHarian[idx], tanggal: tanggalFormatted, uraian, inTot, outTot, biaya };
+    await CashflowAPI.update(mockKasHarian[idx]);
+    Notification.success('Data kas berhasil diupdate', { duration: 2500 });
+    closeEditKasModal();
+    if (activeTab === 'kas') switchTab('kas');
+    if (activeTab === 'stok') refreshStokView();
+  }
+}
+
+async function deleteKas(id) {
+  const item = mockKasHarian.find(k => k.id === id);
+  if (!item) return;
+  if (!await CustomConfirm.show(`Hapus data kas "${item.uraian}"?`, { type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger' })) return;
+  
+  await CashflowAPI.delete(id);
+  mockKasHarian = mockKasHarian.filter(k => k.id !== id);
+  Notification.success('Data kas berhasil dihapus', { duration: 2500 });
+  if (activeTab === 'kas') switchTab('kas');
+  if (activeTab === 'stok') refreshStokView();
+}
+
+// ========================================
+// CRUD: REKAP
+// ========================================
+function openEditRekapModal(id, type) {
+  const item = mockRekap.find(r => r.id === id);
+  if (!item) return;
+  const bln = type === 'in' ? item.blnIn : item.blnOut;
+  const uraian = type === 'in' ? item.uraianIn : item.uraianOut;
+  const jml = type === 'in' ? item.jmlIn : item.jmlOut;
+
+  const modalHtml = `
+  <div class="md-modal-overlay active" id="editRekapModalOverlay">
+    <div class="md-modal">
+      <div class="md-modal-header"><h3><i data-lucide="pencil"></i> Edit Data Rekap (${type === 'in' ? 'Penerimaan' : 'Pengeluaran'})</h3><button class="md-modal-close" id="editRekapModalClose"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+      <div class="md-modal-body">
+        <form id="editRekapForm">
+          <div class="md-form-grid">
+            <div class="md-form-group"><label>Bulan <span class="required">*</span></label><input type="text" id="editRekapBln" value="${bln}" placeholder="JAN" required /></div>
+            <div class="md-form-group"><label>Jumlah <span class="required">*</span></label><input type="number" id="editRekapJml" value="${jml}" min="0" required /></div>
+            <div class="md-form-group full"><label>Uraian <span class="required">*</span></label><input type="text" id="editRekapUraian" value="${uraian}" required /></div>
+          </div>
+        </form>
+      </div>
+      <div class="md-modal-footer">
+        <button class="md-btn md-btn-cancel" id="editRekapCancelBtn">Batal</button>
+        <button class="md-btn md-btn-save" id="editRekapSaveBtn"><i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>`;
+  
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = modalHtml;
+  document.body.appendChild(wrapper.firstElementChild);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  document.getElementById('editRekapModalClose').addEventListener('click', closeEditRekapModal);
+  document.getElementById('editRekapCancelBtn').addEventListener('click', closeEditRekapModal);
+  document.getElementById('editRekapModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'editRekapModalOverlay') closeEditRekapModal(); });
+  document.getElementById('editRekapSaveBtn').addEventListener('click', () => saveEditRekap(id, type));
+}
+
+function closeEditRekapModal() {
+  const overlay = document.getElementById('editRekapModalOverlay');
+  if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
+}
+
+async function saveEditRekap(id, type) {
+  const bln = document.getElementById('editRekapBln').value.trim();
+  const uraian = document.getElementById('editRekapUraian').value.trim();
+  const jml = parseInt(document.getElementById('editRekapJml').value);
+
+  if (!bln || !uraian || isNaN(jml)) { Notification.warning('Semua field wajib diisi!', { duration: 3000 }); return; }
+
+  const idx = mockRekap.findIndex(r => r.id === id);
+  if (idx !== -1) {
+    if (type === 'in') { mockRekap[idx].blnIn = bln; mockRekap[idx].uraianIn = uraian; mockRekap[idx].jmlIn = jml; }
+    else { mockRekap[idx].blnOut = bln; mockRekap[idx].uraianOut = uraian; mockRekap[idx].jmlOut = jml; }
+    
+    await RekapAPI.update(mockRekap[idx]);
+    Notification.success('Data rekap berhasil diupdate', { duration: 2500 });
+    closeEditRekapModal();
+    if (activeTab === 'rekap') switchTab('rekap');
+  }
+}
+
+async function deleteRekap(id, type) {
+  const item = mockRekap.find(r => r.id === id);
+  if (!item) return;
+  const uraian = type === 'in' ? item.uraianIn : item.uraianOut;
+  if (!await CustomConfirm.show(`Hapus data rekap "${uraian}"?`, { type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger' })) return;
+  
+  if (type === 'in') { item.blnIn = ''; item.uraianIn = ''; item.jmlIn = ''; }
+  else { item.blnOut = ''; item.uraianOut = ''; item.jmlOut = ''; }
+  
+  if (!item.blnIn && !item.blnOut) {
+    await RekapAPI.delete(id);
+    mockRekap = mockRekap.filter(r => r.id !== id);
+  } else {
+    await RekapAPI.update(item);
+  }
+  
+  Notification.success('Data rekap berhasil dihapus', { duration: 2500 });
+  if (activeTab === 'rekap') switchTab('rekap');
+}
+
 function renderTabStok() {
   const selectedProduct = mockProducts.find(p => p.id === kartuStokState.selectedProductId);
   const riwayatStok = generateStokHistory(selectedProduct);
 
   return `
-    <div class="space-y-4 pb-20 animate-tab">
-      <!-- Header Kartu Stok -->
-          <!-- Header Kartu Stok -->
+  <div class="space-y-4 pb-20 animate-tab">
     <div class="stok-card no-print-header">
       <div class="stok-card-header">
-        <!-- Wrapper Kiri: Ikon & Judul -->
         <div class="flex items-center gap-3 flex-1 min-w-0">
-          <div class="stok-card-icon">
-            <i data-lucide="package" class="w-6 h-6"></i>
-          </div>
+          <div class="stok-card-icon"><i data-lucide="package" class="w-6 h-6"></i></div>
           <div class="stok-card-title min-w-0">
             <h2>Kartu Stok Barang</h2>
             <p>Pantau pergerakan stok barang secara detail</p>
             <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
           </div>
         </div>
-        
-        <!-- Tombol Print (Dipindahkan ke sini) -->
         <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
           <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
             <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
@@ -4313,218 +4588,153 @@ function renderTabStok() {
           <span class="hidden sm:inline text-xs font-semibold whitespace-nowrap">Print</span>
         </button>
       </div>
-
-        <!-- Dropdown Pilih Barang (hidden saat print) -->
-        <div class="stok-selector no-print">
-          <label for="stokProductSelect" class="stok-selector-label">
-            <i data-lucide="search" class="w-4 h-4"></i>
-            Pilih Barang
-          </label>
-          <select id="stokProductSelect" class="stok-selector-dropdown">
-            ${mockProducts.map(p => `
-              <option value="${p.id}" ${p.id === kartuStokState.selectedProductId ? 'selected' : ''}>
-                ${p.nama}
-              </option>
-            `).join('')}
-          </select>
-        </div>
-      </div>
-
-      <!-- Header Cetak (tampil saat print) -->
-    <div class="stok-print-header hidden">
-    <div class="stok-print-header-content">
-
-    <!-- Logo di paling atas -->
-    <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
-    
-    <!-- Judul -->
-    <h2 class="stok-print-title">KARTU STOK BARANG</h2>
-    
-    <!-- Nama Barang -->
-    <p class="stok-print-subtitle nama-barang">${selectedProduct?.nama || '-'}</p>
-    
-    <!-- Kode Barang -->
-    <p class="stok-print-subtitle"><strong>${selectedProduct?.kode || '-'}</strong></p>
-    
-    <!-- Supplier -->
-    <p class="stok-print-subtitle"><strong>${selectedProduct?.supplier || '-'}</strong></p>
-  </div>
-</div>
-
-      <!-- Info Barang -->
-      ${selectedProduct ? `
-      <div class="stok-card no-print">
-        <div class="stok-info-grid">
-          <div class="stok-info-item">
-            <div class="stok-info-label">
-              <i data-lucide="package" class="w-3.5 h-3.5"></i>
-              Nama Barang
-            </div>
-            <div class="stok-info-value">${selectedProduct.nama}</div>
-          </div>
-          <div class="stok-info-item">
-            <div class="stok-info-label">
-              <i data-lucide="hash" class="w-3.5 h-3.5"></i>
-              Kode Barang
-            </div>
-            <div class="stok-info-value code">${selectedProduct.kode}</div>
-          </div>
-          <div class="stok-info-item">
-            <div class="stok-info-label">
-              <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-              Supplier
-            </div>
-            <div class="stok-info-value">${selectedProduct.supplier || '-'}</div>
-          </div>
-          <div class="stok-info-item">
-            <div class="stok-info-label">
-              <i data-lucide="phone" class="w-3.5 h-3.5"></i>
-              No. Kontak
-            </div>
-            <div class="stok-info-value">${selectedProduct.kontak || '-'}</div>
-          </div>
-        </div>
-      </div>
-      ` : ''}
-
-      <!-- Tabel Riwayat Stok -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
-            <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
-              <tr>
-                <th class="px-2 py-1.5 border-r border-teal-500">No</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 text-left">Tanggal</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Masuk</th>
-                <th class="px-2 py-1.5 border-r border-teal-500">Keluar</th>
-                <th class="px-2 py-1.5 border-r border-teal-500 font-bold">Sisa</th>
-                <th class="px-2 py-1.5">Paraf</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${riwayatStok.map((item, index) => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                  <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
-                  <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left ${item.tanggal.includes('SISA') ? 'font-bold bg-slate-50' : ''}">${item.tanggal}</td>
-                  <td class="px-2 py-1.5 text-teal-600 font-medium border-r border-slate-200">${item.masuk || '-'}</td>
-                  <td class="px-2 py-1.5 text-rose-600 font-medium border-r border-slate-200">${item.keluar || '-'}</td>
-                  <td class="px-2 py-1.5 font-bold border-r border-slate-200 bg-slate-50 text-slate-800">${item.sisa}</td>
-                  <td class="px-2 py-1.5 text-slate-400">${item.paraf}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Catatan Pengisian (hidden saat print) -->
-      <div class="stok-notes no-print">
-        <div class="stok-notes-header">
-          <i data-lucide="info" class="w-4 h-4"></i>
-          <h4>Catatan Pengisian</h4>
-        </div>
-        <ol class="stok-notes-list">
-          <li>Kartu stok dibuat per item barang.</li>
-          <li>Kartu stok diisi setiap ada transaksi dan diparaf.</li>
-          <li>Pengisian kartu stok berlanjut.</li>
-          <li>Setiap pengisian lembar baru, dituliskan saldo akhir barang.</li>
-        </ol>
+      <div class="stok-selector no-print">
+        <label for="stokProductSelect" class="stok-selector-label"><i data-lucide="search" class="w-4 h-4"></i> Pilih Barang</label>
+        <select id="stokProductSelect" class="stok-selector-dropdown">
+          ${mockProducts.map(p => `<option value="${p.id}" ${p.id === kartuStokState.selectedProductId ? 'selected' : ''}>${p.nama}</option>`).join('')}
+        </select>
       </div>
     </div>
+
+    <div class="stok-print-header hidden">
+      <div class="stok-print-header-content">
+        <img src="asset/logo-rptra.png" alt="Logo" class="stok-print-logo" />
+        <h2 class="stok-print-title">KARTU STOK BARANG</h2>
+        <p class="stok-print-subtitle nama-barang">${selectedProduct?.nama || '-'}</p>
+        <p class="stok-print-subtitle"><strong>${selectedProduct?.kode || '-'}</strong></p>
+        <p class="stok-print-subtitle"><strong>${selectedProduct?.supplier || '-'}</strong></p>
+      </div>
+    </div>
+
+    ${selectedProduct ? `
+    <div class="stok-card no-print">
+      <div class="stok-info-grid">
+        <div class="stok-info-item"><div class="stok-info-label"><i data-lucide="package" class="w-3.5 h-3.5"></i> Nama Barang</div><div class="stok-info-value">${selectedProduct.nama}</div></div>
+        <div class="stok-info-item"><div class="stok-info-label"><i data-lucide="hash" class="w-3.5 h-3.5"></i> Kode Barang</div><div class="stok-info-value code">${selectedProduct.kode}</div></div>
+        <div class="stok-info-item"><div class="stok-info-label"><i data-lucide="truck" class="w-3.5 h-3.5"></i> Supplier</div><div class="stok-info-value">${selectedProduct.supplier || '-'}</div></div>
+        <div class="stok-info-item"><div class="stok-info-label"><i data-lucide="phone" class="w-3.5 h-3.5"></i> No. Kontak</div><div class="stok-info-value">${selectedProduct.kontak || '-'}</div></div>
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
+          <thead class="text-[10px] text-white bg-teal-600 uppercase tracking-wide">
+            <tr>
+              <th class="px-2 py-1.5 border-r border-teal-500">No</th>
+              <th class="px-2 py-1.5 border-r border-teal-500 text-left">Tanggal</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Masuk</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Keluar</th>
+              <th class="px-2 py-1.5 border-r border-teal-500 font-bold">Sisa</th>
+              <th class="px-2 py-1.5 border-r border-teal-500">Paraf</th>
+              <!-- ✅ KOLOM AKSI DITAMBAHKAN -->
+              <th class="px-2 py-1.5 no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${riwayatStok.map((item, index) => `
+              <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                <td class="px-2 py-1.5 border-r border-slate-200">${index + 1}</td>
+                <td class="px-2 py-1.5 font-medium text-slate-800 border-r border-slate-200 text-left ${item.tanggal.includes('SISA') ? 'font-bold bg-slate-50' : ''}">${item.tanggal}</td>
+                <td class="px-2 py-1.5 text-teal-600 font-medium border-r border-slate-200">${item.masuk || '-'}</td>
+                <td class="px-2 py-1.5 text-rose-600 font-medium border-r border-slate-200">${item.keluar || '-'}</td>
+                <td class="px-2 py-1.5 font-bold border-r border-slate-200 bg-slate-50 text-slate-800">${item.sisa}</td>
+                <td class="px-2 py-1.5 text-slate-400 border-r border-slate-200">${item.paraf}</td>
+                
+                <!-- ✅ TOMBOL AKSI DITAMBAHKAN -->
+                <td class="px-2 py-1.5 no-print">
+                  ${item.sourceId ? `
+                  <div class="action-btns">
+                    <button class="action-icon-btn edit" data-edit-stok="${item.sourceId}" data-stok-type="${item.sourceType}" title="Edit"><i data-lucide="pencil"></i></button>
+                    <button class="action-icon-btn delete" data-delete-stok="${item.sourceId}" data-stok-type="${item.sourceType}" title="Hapus"><i data-lucide="trash-2"></i></button>
+                  </div>` : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="stok-notes no-print">
+      <div class="stok-notes-header"><i data-lucide="info" class="w-4 h-4"></i><h4>Catatan Pengisian</h4></div>
+      <ol class="stok-notes-list">
+        <li>Kartu stok dibuat per item barang.</li>
+        <li>Kartu stok diisi setiap ada transaksi dan diparaf.</li>
+        <li>Pengisian kartu stok berlanjut.</li>
+        <li>Setiap pengisian lembar baru, dituliskan saldo akhir barang.</li>
+      </ol>
+    </div>
+  </div>
   `;
 }
 
+// ✅ FUNGSI INI DIPERBARUI: Menambahkan sourceId dan sourceType
 function generateStokHistory(product) {
   if (!product) return [];
-
   const history = [];
   let runningStock = 0;
 
-  // 1. Entry pertama: Stok awal saat barang ditambahkan (dari master data)
+  // 1. Stok awal dari Master Data
   if (product.tanggal && product.stok > 0) {
-    // Format tanggal dari master data (YYYY-MM-DD) ke format yang lebih readable
     const tanggalMasuk = new Date(product.tanggal).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      day: 'numeric', month: 'long', year: 'numeric'
     }).toUpperCase();
-
     history.push({
-      id: 1,
-      tanggal: tanggalMasuk,
-      masuk: product.stok,
-      keluar: '',
-      sisa: product.stok,
-      paraf: '✓'
+      id: 1, tanggal: tanggalMasuk, masuk: product.stok, keluar: '', sisa: product.stok, paraf: '✓',
+      sourceId: product.id, sourceType: 'master' // ✅ TAMBAHKAN
     });
     runningStock = product.stok;
   }
 
-  // 2. Ambil semua transaksi penjualan untuk produk ini dari mockPenjualan
+  // 2. Transaksi penjualan
   const transaksiProduk = mockPenjualan
     .filter(p => p.kode === product.kode)
-    .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+    .sort((a, b) => (parseIndoDateToTimestamp(a.tanggal) || new Date(a.tanggal).getTime()) - (parseIndoDateToTimestamp(b.tanggal) || new Date(b.tanggal).getTime()));
 
-  // 3. Tambahkan setiap transaksi sebagai stok keluar
-  transaksiProduk.forEach((transaksi, index) => {
+  transaksiProduk.forEach((transaksi) => {
     runningStock -= transaksi.jumlah;
-    
     history.push({
-      id: history.length + 1,
-      tanggal: transaksi.tanggal,
-      masuk: '',
-      keluar: transaksi.jumlah,
-      sisa: runningStock,
-      paraf: '✓'
+      id: history.length + 1, tanggal: transaksi.tanggal, masuk: '', keluar: transaksi.jumlah, sisa: runningStock, paraf: '✓',
+      sourceId: transaksi.id, sourceType: 'penjualan' // ✅ TAMBAHKAN
     });
   });
 
-  // 4. Jika ada pembelian/restock (dari mockKasHarian dengan uraian PEMBELIAN)
+  // 3. Pembelian / Restock
   const pembelianProduk = mockKasHarian
     .filter(k => k.uraian.includes(product.nama) && k.uraian.includes('PEMBELIAN'))
-    .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+    .sort((a, b) => (parseIndoDateToTimestamp(a.tanggal) || new Date(a.tanggal).getTime()) - (parseIndoDateToTimestamp(b.tanggal) || new Date(b.tanggal).getTime()));
 
-  pembelianProduk.forEach((pembelian, index) => {
+  pembelianProduk.forEach((pembelian) => {
     if (pembelian.outJml) {
       runningStock += pembelian.outJml;
-      
       history.push({
-        id: history.length + 1,
-        tanggal: pembelian.tanggal,
-        masuk: pembelian.outJml,
-        keluar: '',
-        sisa: runningStock,
-        paraf: '✓'
+        id: history.length + 1, tanggal: pembelian.tanggal, masuk: pembelian.outJml, keluar: '', sisa: runningStock, paraf: '✓',
+        sourceId: pembelian.id, sourceType: 'pembelian' // ✅ TAMBAHKAN
       });
     }
   });
 
-  // 5. Sort history berdasarkan tanggal
+  // 4. Sort history berdasarkan tanggal
   history.sort((a, b) => {
-    const dateA = new Date(a.tanggal);
-    const dateB = new Date(b.tanggal);
+    const dateA = parseIndoDateToTimestamp(a.tanggal) || new Date(a.tanggal).getTime();
+    const dateB = parseIndoDateToTimestamp(b.tanggal) || new Date(b.tanggal).getTime();
     return dateA - dateB;
   });
 
-  // 6. Re-numbering dan recalculate running stock
+  // 5. Re-numbering dan recalculate running stock
   let finalStock = 0;
-  const initialStock = product.stok || 0;
-  
-  // Reset dan hitung ulang dengan urutan yang benar
   return history.map((item, index) => {
     if (index === 0 && item.masuk) {
-      // Entry pertama adalah stok awal
-      finalStock = item.masuk;
+      finalStock = parseInt(item.masuk);
     } else if (item.masuk) {
-      // Stok masuk
       finalStock += parseInt(item.masuk);
     } else if (item.keluar) {
-      // Stok keluar
       finalStock -= parseInt(item.keluar);
     }
-    
     return {
-      ...item,
+      ...item, // ✅ Ini akan menyertakan sourceId dan sourceType
       sisa: finalStock,
       id: index + 1
     };
@@ -4534,17 +4744,14 @@ function generateStokHistory(product) {
 function renderTabRekap() {
   return `
   <div class="space-y-4 pb-20 animate-tab">
-    <!-- Header Laporan (Rata Kiri + Tombol Print) -->
+    <!-- Header Laporan -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
       <div class="flex flex-row justify-between items-center gap-3">
-        <!-- Bagian Kiri: Judul & Subjudul (Rata Kiri) -->
         <div class="min-w-0 flex-1 text-left">
           <h2 class="text-lg font-bold text-slate-800 truncate">Rekap Laporan Keuangan</h2>
           <p class="text-xs text-slate-500">Tahun 2026</p>
           <p class="text-xs text-teal-600 font-semibold mt-1">RPTRA Kenanga</p>
         </div>
-        
-        <!-- Bagian Kanan: Tombol Print -->
         <button class="no-print bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 w-11 h-11 rounded-full p-0 sm:w-auto sm:h-10 sm:rounded-lg sm:px-4 sm:gap-2" onclick="window.print()">
           <div class="w-9 h-9 bg-white/95 rounded-full flex items-center justify-center shadow-sm flex-shrink-0 sm:w-7 sm:h-7 sm:rounded-md">
             <i data-lucide="printer" class="w-7 h-7 text-amber-500 object-contain sm:w-4 sm:h-4"></i>
@@ -4554,25 +4761,30 @@ function renderTabRekap() {
       </div>
     </div>
 
-    <!-- Tabel Data (Ukuran Font Disamakan dengan Penjualan) -->
+    <!-- Tabel Data -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-xs text-center whitespace-nowrap border-collapse">
           <thead class="text-[10px] text-white uppercase tracking-wide">
             <tr>
-              <!-- ✅ PERBAIKAN: Menghapus 'text-base' agar font mewarisi 'text-[10px]' dari thead, sama seperti halaman Penjualan -->
-              <th colspan="4" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600 font-bold">PENERIMAAN</th>
-              <th colspan="4" class="px-2 py-1.5 bg-rose-600 font-bold">PENGELUARAN</th>
+              <!-- ✅ COLSPAN DIUBAH DARI 4 MENJADI 5 -->
+              <th colspan="5" class="px-2 py-1.5 border-r border-teal-500 bg-teal-600 font-bold">PENERIMAAN</th>
+              <th colspan="5" class="px-2 py-1.5 bg-rose-600 font-bold">PENGELUARAN</th>
             </tr>
             <tr class="bg-slate-100 text-slate-700">
               <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
               <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
               <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
               <th class="px-2 py-1.5 border-r border-teal-500 text-right">Jumlah</th>
+              <!-- ✅ KOLOM AKSI PENERIMAAN -->
+              <th class="px-2 py-1.5 border-r border-teal-500 text-center no-print">Aksi</th>
+              
               <th class="px-2 py-1.5 border-r border-slate-300 w-10">No</th>
               <th class="px-2 py-1.5 border-r border-slate-300">Bulan</th>
               <th class="px-2 py-1.5 border-r border-slate-300">Uraian</th>
               <th class="px-2 py-1.5 text-right">Jumlah</th>
+              <!-- ✅ KOLOM AKSI PENGELUARAN -->
+              <th class="px-2 py-1.5 text-center no-print">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -4582,10 +4794,27 @@ function renderTabRekap() {
                 <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnIn}</td>
                 <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianIn}</td>
                 <td class="px-2 py-1.5 text-right text-teal-600 font-medium border-r border-teal-500">${formatRp(item.jmlIn)}</td>
+                
+                <!-- ✅ TOMBOL AKSI PENERIMAAN -->
+                <td class="px-2 py-1.5 text-center border-r border-teal-500 no-print">
+                  ${item.blnIn ? `<div class="action-btns justify-center">
+                    <button class="action-icon-btn edit" data-edit-rekap-in="${item.id}" title="Edit"><i data-lucide="pencil"></i></button>
+                    <button class="action-icon-btn delete" data-delete-rekap-in="${item.id}" title="Hapus"><i data-lucide="trash-2"></i></button>
+                  </div>` : ''}
+                </td>
+
                 <td class="px-2 py-1.5 border-r border-slate-200 text-slate-500">${item.blnOut ? index + 5 : ''}</td>
                 <td class="px-2 py-1.5 font-medium border-r border-slate-200">${item.blnOut}</td>
                 <td class="px-2 py-1.5 border-r border-slate-200 text-left">${item.uraianOut}</td>
                 <td class="px-2 py-1.5 text-right text-rose-600 font-medium">${formatRp(item.jmlOut)}</td>
+                
+                <!-- ✅ TOMBOL AKSI PENGELUARAN -->
+                <td class="px-2 py-1.5 text-center no-print">
+                  ${item.blnOut ? `<div class="action-btns justify-center">
+                    <button class="action-icon-btn edit" data-edit-rekap-out="${item.id}" title="Edit"><i data-lucide="pencil"></i></button>
+                    <button class="action-icon-btn delete" data-delete-rekap-out="${item.id}" title="Hapus"><i data-lucide="trash-2"></i></button>
+                  </div>` : ''}
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -4593,12 +4822,20 @@ function renderTabRekap() {
             <tr>
               <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENERIMAAN</td>
               <td class="px-2 py-1.5 text-right text-teal-700 border-r border-teal-500">${formatRp(633000)}</td>
+              <!-- ✅ CELL KOSONG UNTUK KOLOM AKSI -->
+              <td class="px-2 py-1.5 border-r border-teal-500"></td>
+              
               <td colspan="3" class="px-2 py-1.5 text-right border-r border-slate-200">JUMLAH PENGELUARAN</td>
               <td class="px-2 py-1.5 text-right text-rose-700">${formatRp(620400)}</td>
+              <!-- ✅ CELL KOSONG UNTUK KOLOM AKSI -->
+              <td class="px-2 py-1.5"></td>
             </tr>
             <tr>
-              <td colspan="7" class="px-2 py-1.5 text-right border-r border-slate-200 bg-slate-100">KEUNTUNGAN BERSIH</td>
+              <!-- ✅ COLSPAN DIUBAH DARI 7 MENJADI 8 -->
+              <td colspan="8" class="px-2 py-1.5 text-right border-r border-slate-200 bg-slate-100">KEUNTUNGAN BERSIH</td>
               <td class="px-2 py-1.5 text-right font-bold text-teal-700 bg-slate-100">${formatRp(12600)}</td>
+              <!-- ✅ CELL KOSONG DI AKHIR -->
+              <td class="px-2 py-1.5 bg-slate-100"></td>
             </tr>
           </tfoot>
         </table>
@@ -4656,9 +4893,17 @@ function switchTab(tabId) {
         
         // ✅ Setup listeners khusus
         if (tabId === 'master') setupMasterDataListeners();
-        if (tabId === 'stok') setupStokListeners();
-        if (tabId === 'kas') setupKasHarianListeners(); // ✅ TAMBAHKAN INI
-    }
+        if (tabId === 'stok') {
+          setupStokListeners();
+          setupStokAksiListeners(); 
+        }
+          if (tabId === 'kas') {
+            setupKasHarianListeners();
+            setupKasAksiListeners(); 
+          }
+          if (tabId === 'penjualan') setupPenjualanListeners();
+          if (tabId === 'rekap') setupRekapListeners(); 
+  }
     renderBottomNav();
 }
 
@@ -4679,6 +4924,120 @@ function refreshStokView() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     setupStokListeners();
   }
+}
+
+function setupPenjualanListeners() {
+  document.querySelectorAll('[data-edit-sale]').forEach(btn => {
+    btn.addEventListener('click', () => openEditSaleModal(parseInt(btn.dataset.editSale)));
+  });
+  document.querySelectorAll('[data-delete-sale]').forEach(btn => {
+    btn.addEventListener('click', () => deleteSale(parseInt(btn.dataset.deleteSale)));
+  });
+}
+
+function setupRekapListeners() {
+  document.querySelectorAll('[data-edit-rekap-in]').forEach(btn => {
+    btn.addEventListener('click', () => openEditRekapModal(parseInt(btn.dataset.editRekapIn), 'in'));
+  });
+  document.querySelectorAll('[data-delete-rekap-in]').forEach(btn => {
+    btn.addEventListener('click', () => deleteRekap(parseInt(btn.dataset.deleteRekapIn), 'in'));
+  });
+  document.querySelectorAll('[data-edit-rekap-out]').forEach(btn => {
+    btn.addEventListener('click', () => openEditRekapModal(parseInt(btn.dataset.editRekapOut), 'out'));
+  });
+  document.querySelectorAll('[data-delete-rekap-out]').forEach(btn => {
+    btn.addEventListener('click', () => deleteRekap(parseInt(btn.dataset.deleteRekapOut), 'out'));
+  });
+}
+
+// ========================================
+// EVENT LISTENERS TAMBAHAN UNTUK TOMBOL AKSI
+// ========================================
+
+// --- Kas Harian ---
+function setupKasAksiListeners() {
+  document.querySelectorAll('[data-edit-kas]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.editKas);
+      Notification.info(`Fitur edit kas ID ${id} sedang dalam pengembangan.`, { duration: 2500 });
+    });
+  });
+
+  document.querySelectorAll('[data-delete-kas]').forEach(btn => {
+    btn.addEventListener('click', () => deleteKas(parseInt(btn.dataset.deleteKas)));
+  });
+}
+
+async function deleteKas(id) {
+  const item = mockKasHarian.find(k => k.id === id);
+  if (!item) return;
+
+  if (!await CustomConfirm.show(`Hapus data kas "${item.uraian}"?`, {
+    type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger'
+  })) return;
+
+  mockKasHarian = mockKasHarian.filter(k => k.id !== id);
+  if (typeof CashflowAPI !== 'undefined' && CashflowAPI.delete) {
+    CashflowAPI.delete(id).catch(err => console.warn('Gagal hapus kas dari cloud:', err));
+  }
+
+  Notification.success(`Data kas "${item.uraian}" berhasil dihapus`, { duration: 2500 });
+  if (activeTab === 'kas') switchTab('kas');
+}
+
+// --- Kartu Stok ---
+function setupStokAksiListeners() {
+  document.querySelectorAll('[data-edit-stok]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sourceId = parseInt(btn.dataset.editStok);
+      const sourceType = btn.dataset.stokType;
+      Notification.info(`Fitur edit stok dari ${sourceType} (ID: ${sourceId}) sedang dalam pengembangan.`, { duration: 2500 });
+    });
+  });
+
+  document.querySelectorAll('[data-delete-stok]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sourceId = parseInt(btn.dataset.deleteStok);
+      const sourceType = btn.dataset.stokType;
+      deleteStok(sourceId, sourceType);
+    });
+  });
+}
+
+async function deleteStok(sourceId, sourceType) {
+  if (!await CustomConfirm.show(`Hapus transaksi ini? Data stok akan diperbarui otomatis.`, {
+    type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger'
+  })) return;
+
+  if (sourceType === 'penjualan') {
+    mockPenjualan = mockPenjualan.filter(p => p.id !== sourceId);
+    if (typeof SalesAPI !== 'undefined' && SalesAPI.delete) SalesAPI.delete(sourceId).catch(err => console.warn(err));
+  } else if (sourceType === 'pembelian') {
+    mockKasHarian = mockKasHarian.filter(k => k.id !== sourceId);
+    if (typeof CashflowAPI !== 'undefined' && CashflowAPI.delete) CashflowAPI.delete(sourceId).catch(err => console.warn(err));
+  } else if (sourceType === 'master') {
+    Notification.warning('Stok awal dari Master Data tidak bisa dihapus dari sini. Silakan edit di Master Data.', { duration: 4000 });
+    return;
+  }
+
+  Notification.success('Transaksi berhasil dihapus. Stok diperbarui.', { duration: 2500 });
+  if (activeTab === 'stok') refreshStokView();
+}
+
+// --- Rekap ---
+function setupRekapListeners() {
+  document.querySelectorAll('[data-edit-rekap-in]').forEach(btn => {
+    btn.addEventListener('click', () => Notification.info(`Fitur edit rekap penerimaan sedang dalam pengembangan.`, { duration: 2500 }));
+  });
+  document.querySelectorAll('[data-delete-rekap-in]').forEach(btn => {
+    btn.addEventListener('click', () => Notification.info(`Fitur hapus rekap penerimaan sedang dalam pengembangan.`, { duration: 2500 }));
+  });
+  document.querySelectorAll('[data-edit-rekap-out]').forEach(btn => {
+    btn.addEventListener('click', () => Notification.info(`Fitur edit rekap pengeluaran sedang dalam pengembangan.`, { duration: 2500 }));
+  });
+  document.querySelectorAll('[data-delete-rekap-out]').forEach(btn => {
+    btn.addEventListener('click', () => Notification.info(`Fitur hapus rekap pengeluaran sedang dalam pengembangan.`, { duration: 2500 }));
+  });
 }
 
 function renderDecoratorLine() {
