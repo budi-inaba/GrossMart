@@ -1251,17 +1251,17 @@ tbody tr:hover {
 .master-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 .master-table thead {
   background: linear-gradient(135deg, #0f766e, #0d9488);
   color: white;
 }
 .master-table thead th {
-  padding: 12px 14px;
-  text-align: left;
+  padding: 8px 10px;
+  text-align: center;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255,255,255,0.15);
@@ -1273,9 +1273,10 @@ tbody tr:hover {
 }
 .master-table tbody tr:hover { background: #f8fafc; }
 .master-table tbody td {
-  padding: 12px 14px;
+  padding: 8px 10px;
   color: #334155;
   vertical-align: middle;
+  text-align: center;
 }
 .master-table .product-thumb {
   width: 40px;
