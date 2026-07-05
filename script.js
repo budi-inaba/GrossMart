@@ -3418,6 +3418,38 @@ function getGreeting() {
   return '🌙 Selamat Malam';
 }
 
+let dashboardClockInterval = null;
+
+function startDashboardClock() {
+  // Hentikan interval lama jika ada (mencegah duplikasi)
+  if (dashboardClockInterval) clearInterval(dashboardClockInterval);
+  
+  const updateClock = () => {
+    const clockElement = document.getElementById('dashboardLiveClock');
+    if (!clockElement) return;
+    
+    const now = new Date();
+    // Tambahkan second: '2-digit' agar jam terlihat berdetak real-time
+    const jamSekarang = now.toLocaleTimeString('id-ID', {
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+    
+    clockElement.textContent = `${jamSekarang} WIB`;
+  };
+
+  updateClock(); // Jalankan segera saat pertama kali dibuka
+  dashboardClockInterval = setInterval(updateClock, 1000); // Update setiap 1 detik
+}
+
+function stopDashboardClock() {
+  if (dashboardClockInterval) {
+    clearInterval(dashboardClockInterval);
+    dashboardClockInterval = null;
+  }
+}
+
 function renderTabPenjualan() {
   return `
   <div class="space-y-4 pb-20 animate-tab">
@@ -4880,6 +4912,7 @@ function renderBottomNav() {
 }
 
 function switchTab(tabId) {
+    stopDashboardClock(); // ⏹️ PENTING: Hentikan jam sebelum pindah tab
     activeTab = tabId;
     const mainContent = document.getElementById('mainContent');
     if (mainContent) {
@@ -4903,6 +4936,12 @@ function switchTab(tabId) {
           }
           if (tabId === 'penjualan') setupPenjualanListeners();
           if (tabId === 'rekap') setupRekapListeners(); 
+          
+           // ⏱️ Mulai jam real-time HANYA jika user berada di Dashboard
+          if (tabId === 'dashboard') {
+          startDashboardClock();
+          }
+
   }
     renderBottomNav();
 }
