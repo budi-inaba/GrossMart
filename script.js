@@ -3199,7 +3199,7 @@ function renderTabDashboard() {
               <i data-lucide="calendar" class="w-4 h-4 inline-block mr-1"></i>
               ${tanggalHariIni} &nbsp;•&nbsp; 
               <i data-lucide="clock" class="w-4 h-4 inline-block mr-1"></i>
-              ${jamSekarang} WIB
+              <span id="dashboardLiveClock">${jamSekarang} WIB</span>
             </p>
           </div>
           <div class="welcome-illustration">
