@@ -1,7 +1,7 @@
 // ========================================
 // MOCK DATA
 // ========================================
-const mockPenjualan = [
+let mockPenjualan = [
   { id: 1, tanggal: '2 JANUARI 2025', nama: 'KENTANG MUSTOFA', kode: 'KM 1', jumlah: 4, harga: 100000, total: 400000, hargaBeli: 95000, totalBeli: 380000, untung: 20000 },
   { id: 2, tanggal: '3 JANUARI 2025', nama: 'AQUA', kode: 'AB', jumlah: 5, harga: 3000, total: 15000, hargaBeli: 2500, totalBeli: 12500, untung: 2500 },
   { id: 3, tanggal: '3 JANUARI 2025', nama: 'AQUA GELAS', kode: 'AG', jumlah: 10, harga: 500, total: 5000, hargaBeli: 300, totalBeli: 3000, untung: 2000 },
@@ -12,7 +12,7 @@ const mockPenjualan = [
   { id: 8, tanggal: '31 JANUARI 2025', nama: 'AQUA BOTOL BESAR', kode: 'ABB', jumlah: 4, harga: 5000, total: 20000, hargaBeli: 4500, totalBeli: 18000, untung: 2000 },
 ];
 
-const mockKasHarian = [
+let mockKasHarian = [
   { id: 1, tanggal: '2 JANUARI 2025', bukti: '', uraian: 'SALDO BULAN DESEMBER', inJml: '', inHrg: '', inTot: '', outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2200000 },
   { id: 2, tanggal: '3 JANUARI 2025', bukti: '', uraian: 'PENJUALAN KENTANG MUSTOFA', inJml: 4, inHrg: 100000, inTot: 400000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2600000 },
   { id: 3, tanggal: '3 JANUARI 2025', bukti: '', uraian: 'PENJUALAN AQUA', inJml: 5, inHrg: 3000, inTot: 15000, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: 2615000 },
@@ -35,7 +35,7 @@ const mockKartuStok = {
   ]
 };
 
-const mockRekap = [
+let mockRekap = [
   { id: 1, blnIn: 'JAN', uraianIn: 'PENJUALAN', jmlIn: 633000, blnOut: 'JAN', uraianOut: 'PEMBELANJAAN', jmlOut: 524000 },
   { id: 2, blnIn: '', uraianIn: '', jmlIn: '', blnOut: '', uraianOut: 'BIAYA', jmlOut: 96400 },
   { id: 3, blnIn: 'FEB', uraianIn: 'PENJUALAN', jmlIn: 0, blnOut: 'FEB', uraianOut: 'PEMBELANJAAN', jmlOut: 0 },
@@ -2678,16 +2678,17 @@ async function saveMasterData() {
         hargaBeli, harga: hargaJual,
         stok, image
       };
+      // ✅ SYNC KE CLOUD
+      await ProductAPI.update(mockProducts[idx]);
       showCartFeedback(`✅ Barang "${nama}" berhasil diupdate`);
     }
   } else {
     // CREATE
     const newId = mockProducts.length > 0 ? Math.max(...mockProducts.map(p => p.id)) + 1 : 1;
-    mockProducts.push({
-      id: newId, kode, nama, kategori, tanggal,
-      hargaBeli, harga: hargaJual,
-      stok, image
-    });
+    const newProduct = { id: newId, kode, nama, kategori, tanggal, hargaBeli, harga: hargaJual, stok, image };
+    mockProducts.push(newProduct);
+    // ✅ SYNC KE CLOUD
+    await ProductAPI.save(newProduct);
     showCartFeedback(`✅ Barang "${nama}" berhasil ditambahkan`);
   }
 
@@ -2696,19 +2697,20 @@ async function saveMasterData() {
 }
 
 async function deleteMasterData(id) {
-  const product = mockProducts.find(p => p.id === id);
-  if (!product) return;
+    const product = mockProducts.find(p => p.id === id);
+    if (!product) return;
 
-  if (!await CustomConfirm.show(`Hapus barang "${product.nama}" ?\nData yang dihapus tidak dapat dikembalikan.`, {
-    type: 'danger',
-    confirmText: 'Hapus',
-    cancelText: 'Batal',
-    confirmClass: 'btn-danger'
-  })) return;
+    if (!await CustomConfirm.show(`Hapus barang "${product.nama}" ?\nData yang dihapus tidak dapat dikembalikan.`, {
+        type: 'danger', confirmText: 'Hapus', cancelText: 'Batal', confirmClass: 'btn-danger'
+    })) return;
 
-  mockProducts = mockProducts.filter(p => p.id !== id);
-  Notification.success(`Barang "${product.nama}" telah dihapus`, { duration: 2500 });
-  refreshMasterData();
+    // ✅ HAPUS DI CLOUD DULU
+    await ProductAPI.delete(id);
+
+    // Jika berhasil, baru hapus di lokal
+    mockProducts = mockProducts.filter(p => p.id !== id);
+    Notification.success(`Barang "${product.nama}" telah dihapus`, { duration: 2500 });
+    refreshMasterData();
 }
 
 // ========================================
@@ -3052,23 +3054,63 @@ const styleAnim = document.createElement('style');
 styleAnim.textContent = `@keyframes slideDown { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } } @keyframes fadeOut { to { opacity: 0; transform: translateX(-50%) translateY(-10px); } }`;
 document.head.appendChild(styleAnim);
 
-function saveTransaction() {
-  if (posState.cart.length === 0) return;
-  const tanggal = document.getElementById('posDate')?.value || new Date().toISOString().split('T')[0];
-  const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
-  
-  posState.cart.forEach(item => {
-    const newId = mockPenjualan.length > 0 ? Math.max(...mockPenjualan.map(p => p.id)) + 1 : 1;
-    mockPenjualan.push({ id: newId, tanggal: tanggalFormatted, nama: item.nama, kode: item.kode, jumlah: item.jumlah, harga: item.harga, total: item.total, hargaBeli: item.hargaBeli, totalBeli: item.totalBeli, untung: item.untung });
+async function saveTransaction() {
+    if (posState.cart.length === 0) return;
     
-    const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
-    const lastSaldo = mockKasHarian.length > 0 ? mockKasHarian[mockKasHarian.length - 1].saldo : 0;
-    mockKasHarian.push({ id: kasId, tanggal: tanggalFormatted, bukti: '', uraian: `PENJUALAN ${item.nama}`, inJml: item.jumlah, inHrg: item.harga, inTot: item.total, outJml: '', outHrg: '', outTot: '', biaya: '', saldo: lastSaldo + item.total });
-  });
-  
-    Notification.success(`${posState.cart.length} item berhasil disimpan! Total: ${formatRp(calculateCartTotal())}`, { duration: 4000 });
-  if (activeTab === 'penjualan' || activeTab === 'kas') switchTab(activeTab);
-  closePOS();
+    const tanggal = document.getElementById('posDate')?.value || new Date().toISOString().split('T')[0];
+    const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+    
+    // Simpan total dan jumlah item sebelum keranjang di-reset oleh closePOS()
+    const totalItems = posState.cart.length;
+    const totalAmount = calculateCartTotal();
+    
+    const cloudSyncPromises = []; // Array untuk menampung semua promise API
+
+    // 1. Loop untuk menyiapkan data dan update memori lokal (INSTAN)
+    for (const item of posState.cart) {
+        // --- Data Penjualan ---
+        const newId = mockPenjualan.length > 0 ? Math.max(...mockPenjualan.map(p => p.id)) + 1 : 1;
+        const saleData = { 
+            id: newId, tanggal: tanggalFormatted, nama: item.nama, kode: item.kode, 
+            jumlah: item.jumlah, harga: item.harga, total: item.total, 
+            hargaBeli: item.hargaBeli, totalBeli: item.totalBeli, untung: item.untung 
+        };
+        mockPenjualan.push(saleData);
+        cloudSyncPromises.push(SalesAPI.save(saleData)); // ✅ Tampung promise, JANGAN di-await
+
+        // --- Data Kas Harian ---
+        const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
+        const lastSaldo = mockKasHarian.length > 0 ? mockKasHarian[mockKasHarian.length - 1].saldo : 0;
+        const kasData = { 
+            id: kasId, tanggal: tanggalFormatted, bukti: '', uraian: `PENJUALAN ${item.nama}`, 
+            inJml: item.jumlah, inHrg: item.harga, inTot: item.total, 
+            outJml: '', outHrg: '', outTot: '', biaya: '', saldo: lastSaldo + item.total 
+        };
+        mockKasHarian.push(kasData);
+        cloudSyncPromises.push(CashflowAPI.save(kasData)); // ✅ Tampung promise, JANGAN di-await
+    }
+
+    // 2. Update UI secara INSTAN (Tanpa menunggu proses sync cloud)
+    Notification.success(`${totalItems} item berhasil disimpan! Total: ${formatRp(totalAmount)}`, { duration: 4000 });
+    
+    // Refresh tabel jika sedang di halaman penjualan/kas
+    if (activeTab === 'penjualan' || activeTab === 'kas') {
+        switchTab(activeTab);
+    }
+    
+    // Tutup halaman POS
+    closePOS();
+
+    // 3. Sinkronisasi ke Cloud di BACKGROUND (Concurrent / Bersamaan)
+    // Proses ini berjalan di latar belakang dan tidak akan memblokir UI
+    Promise.all(cloudSyncPromises)
+        .then(() => {
+            console.log('✅ Data transaksi berhasil sync ke cloud');
+        })
+        .catch((err) => {
+            console.error('❌ Gagal sync ke cloud:', err);
+            Notification.warning('Data tersimpan di lokal, tapi gagal sync ke cloud. Silakan klik "Sync ke Cloud" nanti.', { duration: 5000 });
+        });
 }
 
 // ========================================
@@ -3274,6 +3316,7 @@ function renderTabDashboard() {
                 <span>Kas Harian</span>
               </button>
               `}
+
             </div>
           </div>
         </div>
@@ -3986,7 +4029,7 @@ function closeBiayaModal() {
     if (overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 300); }
 }
 
-function saveBiayaTambahan() {
+function saveBiayaTambahan() { // Tidak perlu async karena tidak ada await yang memblokir
     const tanggal = document.getElementById('biayaTanggal').value;
     const kategori = document.getElementById('biayaKategori').value;
     const uraian = document.getElementById('biayaUraian').value.trim();
@@ -4001,24 +4044,32 @@ function saveBiayaTambahan() {
 
     const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
 
-    // Tambahkan ke Kas Harian (Biaya)
     const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
     const uraianLengkap = `${kategori.toUpperCase()} - ${uraian}${catatan ? ' (' + catatan + ')' : ''}`;
+    const kasData = {
+        id: kasId, tanggal: tanggalFormatted, bukti: `BB-${String(kasId).padStart(3, '0')}`,
+        uraian: uraianLengkap, inJml: '', inHrg: '', inTot: '',
+        outJml: '', outHrg: '', outTot: '', biaya: jumlah, saldo: 0
+    };
     
-    mockKasHarian.push({
-        id: kasId, 
-        tanggal: tanggalFormatted, 
-        bukti: `BB-${String(kasId).padStart(3, '0')}`,
-        uraian: uraianLengkap,
-        inJml: '', inHrg: '', inTot: '',
-        outJml: '', outHrg: '', outTot: '',
-        biaya: jumlah, saldo: 0
-    });
+    // Update memori lokal
+    mockKasHarian.push(kasData);
 
+    // === UPDATE UI INSTAN ===
     Notification.success(`Biaya "${uraian}" sebesar ${formatRp(jumlah)} berhasil dicatat!`, { duration: 3000 });
-    closeBiayaModal();
-    
+    closeBiayaModal(); // Modal langsung tertutup instan
     if (activeTab === 'kas') switchTab('kas');
+
+    // ✅ PERBAIKAN BUG: Sinkronisasi ke Cloud di Background 
+    // (Sebelumnya tidak ada kode ini, sehingga data biaya tidak pernah masuk ke Spreadsheet)
+    CashflowAPI.save(kasData)
+        .then(() => {
+            console.log('✅ Data biaya berhasil sync ke cloud');
+        })
+        .catch((err) => {
+            console.error('❌ Gagal sync biaya ke cloud:', err);
+            Notification.warning('Biaya tersimpan di lokal, tapi gagal sync ke cloud.', { duration: 4000 });
+        });
 }
 
 // ========================================
@@ -4142,14 +4193,13 @@ async function savePembelian() {
     if (!jumlah || jumlah <= 0) { Notification.warning('Jumlah beli harus lebih dari 0!', { duration: 3000 }); return; }
     if (!hargaBeli || hargaBeli <= 0) { Notification.warning('Harga beli harus lebih dari 0!', { duration: 3000 }); return; }
     if (!hargaJual || hargaJual <= 0) { Notification.warning('Harga jual harus lebih dari 0!', { duration: 3000 }); return; }
-    
     if (hargaJual < hargaBeli) {
         if (!await CustomConfirm.show('Harga jual lebih kecil dari harga beli. Lanjutkan?', {
             type: 'warning', confirmText: 'Lanjutkan', cancelText: 'Batal'
         })) return;
     }
 
-    // === PROSES UPLOAD FOTO ===
+    // === PROSES UPLOAD FOTO (Tetap pakai await karena ini proses lokal/baca file) ===
     let imageData = '';
     if (window.pembelianUploadedImage) {
         if (window.pembelianUploadedImage instanceof File) {
@@ -4166,63 +4216,71 @@ async function savePembelian() {
     const total = jumlah * hargaBeli;
     const tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
 
+    // ✅ Array untuk menampung semua Promise API (Sync Background)
+    const cloudSyncPromises = []; 
+
     // === CEK APAKAH BARANG SUDAH ADA DI MASTER DATA ===
     const existingProduct = mockProducts.find(p => p.kode.toLowerCase() === kode.toLowerCase());
     let isNewProduct = false;
 
     if (existingProduct) {
-        // ✅ BARANG SUDAH ADA → Update stok, harga, dan foto
         existingProduct.stok = (existingProduct.stok || 0) + jumlah;
         existingProduct.hargaBeli = hargaBeli;
         existingProduct.harga = hargaJual;
         if (imageData) existingProduct.image = imageData;
         if (supplier) existingProduct.supplier = supplier;
+        
+        // ✅ Tampung promise update, JANGAN di-await
+        cloudSyncPromises.push(ProductAPI.update(existingProduct)); 
     } else {
-        // ✅ BARANG BARU → Tambahkan ke Master Data
         isNewProduct = true;
         const newId = mockProducts.length > 0 ? Math.max(...mockProducts.map(p => p.id)) + 1 : 1;
-        mockProducts.push({
-            id: newId,
-            kode: kode,
-            nama: namaBarang,
-            kategori: kategori,
-            tanggal: tanggal,
-            hargaBeli: hargaBeli,
-            harga: hargaJual,
-            stok: jumlah,
-            image: imageData,
-            supplier: supplier || '-',
-            kontak: ''
-        });
+        const newProduct = {
+            id: newId, kode: kode, nama: namaBarang, kategori: kategori,
+            tanggal: tanggal, hargaBeli: hargaBeli, harga: hargaJual,
+            stok: jumlah, image: imageData, supplier: supplier || '-', kontak: ''
+        };
+        mockProducts.push(newProduct);
+        
+        // ✅ Tampung promise save, JANGAN di-await
+        cloudSyncPromises.push(ProductAPI.save(newProduct));
     }
 
     // === TAMBAHKAN KE KAS HARIAN (PENGELUARAN) ===
     const kasId = mockKasHarian.length > 0 ? Math.max(...mockKasHarian.map(k => k.id)) + 1 : 1;
     const uraianPembelian = `PEMBELIAN ${namaBarang}${keterangan ? ' - ' + keterangan : ''}`;
+    const kasData = {
+        id: kasId, tanggal: tanggalFormatted, bukti: `PB-${String(kasId).padStart(3, '0')}`,
+        uraian: uraianPembelian, inJml: '', inHrg: '', inTot: '',
+        outJml: jumlah, outHrg: hargaBeli, outTot: total, biaya: '', saldo: 0
+    };
+    mockKasHarian.push(kasData);
     
-    mockKasHarian.push({
-        id: kasId,
-        tanggal: tanggalFormatted,
-        bukti: `PB-${String(kasId).padStart(3, '0')}`,
-        uraian: uraianPembelian,
-        inJml: '', inHrg: '', inTot: '',
-        outJml: jumlah, outHrg: hargaBeli, outTot: total,
-        biaya: '', saldo: 0
-    });
+    // ✅ Tampung promise save kas, JANGAN di-await
+    cloudSyncPromises.push(CashflowAPI.save(kasData));
 
-    // === NOTIFIKASI SUKSES ===
-    const pesanSukses = isNewProduct 
+    // === NOTIFIKASI & UPDATE UI SECARA INSTAN ===
+    const pesanSukses = isNewProduct
         ? `✅ Barang baru "${namaBarang}" ditambahkan ke Master Data & stok ${jumlah} unit tercatat!`
         : `✅ Pembelian ${namaBarang} (${jumlah} unit) berhasil! Stok diupdate otomatis.`;
-    
+
     Notification.success(pesanSukses, { duration: 4000 });
-    
-    closePembelianModal();
-    
-    // Refresh tampilan
+    closePembelianModal(); // Modal langsung tertutup instan
+
+    // Refresh tampilan instan
     if (activeTab === 'kas') switchTab('kas');
     if (activeTab === 'master') refreshMasterData();
     if (activeTab === 'stok') refreshStokView();
+
+    // === SYNC KE CLOUD DI BACKGROUND (Tidak memblokir UI) ===
+    Promise.all(cloudSyncPromises)
+        .then(() => {
+            console.log('✅ Data pembelian berhasil sync ke cloud');
+        })
+        .catch((err) => {
+            console.error('❌ Gagal sync pembelian ke cloud:', err);
+            Notification.warning('Data tersimpan di lokal, tapi gagal sync ke cloud. Silakan klik "Sync ke Cloud" nanti.', { duration: 5000 });
+        });
 }
 
 function renderTabStok() {
@@ -4635,40 +4693,113 @@ function renderDecoratorLine() {
 }
 
 // ========================================
+// BACKGROUND REAL-TIME SYNC (SMART POLLING)
+// ========================================
+let syncIntervalId = null;
+
+function startBackgroundSync() {
+    if (syncIntervalId) clearInterval(syncIntervalId);
+    
+    // Cek spreadsheet setiap 2 detik (bisa diubah, misal 10000 untuk 10 detik)
+    syncIntervalId = setInterval(async () => {
+        await silentSyncFromCloud();
+    }, 2000); 
+}
+
+async function silentSyncFromCloud() {
+    try {
+        const [products, sales, cashflow, rekap] = await Promise.all([
+            ProductAPI.getAll(),
+            SalesAPI.getAll(),
+            CashflowAPI.getAll(),
+            RekapAPI.getAll()
+        ]);
+        
+        let hasChanges = false;
+        
+        // ✅ PERBAIKAN: Gunakan String() agar perbandingan tidak error karena beda tipe data (Number vs String)
+        const checkChange = (localArr, cloudArr) => {
+            if (localArr.length !== cloudArr.length) return true;
+            for (let i = 0; i < localArr.length; i++) {
+                if (String(localArr[i].id) !== String(cloudArr[i].id)) return true;
+            }
+            return false;
+        };
+
+        if (checkChange(mockProducts, products)) { mockProducts = products; hasChanges = true; }
+        if (checkChange(mockPenjualan, sales)) { mockPenjualan = sales; hasChanges = true; }
+        if (checkChange(mockKasHarian, cashflow)) { mockKasHarian = cashflow; hasChanges = true; }
+        if (checkChange(mockRekap, rekap)) { mockRekap = rekap; hasChanges = true; }
+        
+        if (hasChanges) {
+            const isModalOpen = document.querySelector(
+                '.md-modal-overlay.active, ' +
+                '.login-overlay.active, ' +
+                '.settings-modal-overlay.active, ' +
+                '.profile-modal-overlay.active, ' +
+                '#posPageContainer.active, ' +
+                '.custom-confirm-overlay.show, ' +
+                '.qty-modal.active, ' +
+                '.camera-modal-overlay'
+            );
+            
+            if (!isModalOpen && activeTab) {
+                switchTab(activeTab);
+            }
+        }
+        
+    } catch (err) {
+        console.warn('Background sync skipped:', err.message);
+    }
+}
+
+// ========================================
 // INIT APP
 // ========================================
-function initApp() {
-  // ✅ PENTING: Load session auth SEBELUM render UI lainnya
-  loadAuthSession();
-  loadSettingsFromStorage(); 
+async function initApp() {
+    // ✅ PENTING: Load session auth SEBELUM render UI lainnya
+    loadAuthSession();
+    loadSettingsFromStorage();
+    renderDecoratorLine();
 
-  renderDecoratorLine();
-  renderBottomNav(); // Sekarang checkAdminAccess() akan bernilai true jika user adalah Admin
-  // Jika sudah login, tampilkan dashboard. Jika belum, tampilkan penjualan (di balik login screen)
-  switchTab(authState.isLoggedIn ? 'dashboard' : 'penjualan');
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+    // ✅ RENDER UI SECARA INSTAN (Tanpa menunggu data dari cloud)
+    renderBottomNav(); 
+    switchTab(authState.isLoggedIn ? 'dashboard' : 'penjualan');
 
-  const notifBtn = document.getElementById('notifBtn');
-    if (notifBtn) notifBtn.addEventListener('click', () => Notification.info('Tidak ada notifikasi baru', { duration: 2500 }));
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('#btnTambahTransaksi')) openPOS();
-  });
+    const notifBtn = document.getElementById('notifBtn');
+    if (notifBtn) notifBtn.addEventListener('click', () => Notification.info('Tidak ada notifikasi baru', { duration: 1500 }));
 
-  // Render menu user setelah sesi dimuat
-  renderUserMenu();
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#btnTambahTransaksi')) openPOS();
+    });
 
-  // Tutup dropdown user ketika klik di luar
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.user-menu-wrapper')) {
-      closeUserDropdown();
-    }
-  });
+    renderUserMenu();
 
-  // ✅ Tampilkan halaman login otomatis jika user belum login
-  if (!authState.isLoggedIn) {
-    showLoginScreen();
-  }
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-menu-wrapper')) {
+            closeUserDropdown();
+        }
+    });
+
+    if (!authState.isLoggedIn) showLoginScreen();
+
+    // ✅ LOAD DATA DARI CLOUD DI BACKGROUND (Tidak memblokir UI)
+    // ❌ HAPUS 'await' AGAR HALAMAN LANGSUNG TAMPIL
+    SyncManager.loadFromCloud()
+        .then(() => {
+            // Setelah data cloud masuk, refresh tab yang sedang aktif agar data terbaru muncul
+            if (activeTab) {
+                switchTab(activeTab);
+            }
+        })
+        .catch(err => {
+            console.warn('Gagal load dari cloud, menggunakan data lokal:', err);
+        });
+
+    // ✅ START BACKGROUND REAL-TIME SYNC (Cek Spreadsheet setiap 2 detik)
+    startBackgroundSync();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
